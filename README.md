@@ -1,4 +1,4 @@
 # bota-dcp
-Bota Data Collection Package
+BotA Data Collection Package
 
 *** In Development ***
