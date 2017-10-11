@@ -13,6 +13,10 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.table.*;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 @ShellComponent()
 public class Commands {
 
@@ -45,30 +49,37 @@ public class Commands {
     @ShellMethod("List Betfair EventTypes.")
     public Table listEventTypes() {
         TableModel model = new BeanListTableModel<Eventtype>(eventtypeRepository.findAll(),
-                new String[]{"eventtype", "name"});
+                getFieldNames(Eventtype.class));
         TableBuilder tableBuilder = new TableBuilder(model);
 
         return tableBuilder.addFullBorder(BorderStyle.fancy_light).build();
     }
 
-    //ToDo: Add eventName to query
     @ShellMethod("List Betfair Competitions.")
     public Table listCompetitions() {
         TableModel model = new BeanListTableModel<Competition>(competitionRepository.findAll(),
-                new String[]{"competitionId", "competitionName", "competitionRegion"});
+                getFieldNames(Competition.class));
         TableBuilder tableBuilder = new TableBuilder(model);
 
         return tableBuilder.addFullBorder(BorderStyle.fancy_light).build();
     }
 
-    //ToDo: Add competitionName, eventName to query
     @ShellMethod("List Betfair Events.")
     public Table listEvents() {
         TableModel model = new BeanListTableModel<Event>(eventRepository.findAll(),
-                new String[]{"id", "name"});
+                getFieldNames(Event.class));
         TableBuilder tableBuilder = new TableBuilder(model);
 
         return tableBuilder.addFullBorder(BorderStyle.fancy_light).build();
+    }
+
+    private String[] getFieldNames(Class clazz) {
+        List<String> al = new ArrayList<>();
+        Field[] declaredFields = clazz.getDeclaredFields();
+        for(Field f:declaredFields){
+            al.add(f.getName());
+        }
+        return al.toArray(new String[0]);
     }
 
 }
