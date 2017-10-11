@@ -126,7 +126,9 @@ public class BetfairFacade {
         }
     }
 
-//public static void main(String[] args) throws LoginException {
+//public static void main(String[] args) {
+//        BetfairFacade bf = new BetfairFacade();
+//        System.out.println(bf.updateBetfair());
 //    }
 
 }
