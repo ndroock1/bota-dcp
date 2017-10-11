@@ -21,18 +21,6 @@ public class BrowserFacade extends Locomotive {
     public BrowserFacade() {
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        BrowserFacade bf = new BrowserFacade();
-
-        String url = "https://sportsbook.betsson.com/en/football/england/fa-premier-league";
-        String css = "body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div";
-
-        System.out.println(bf.getRawData(url, css));
-        System.out.println(bf.getText(url, css));
-
-        bf.driver.quit();
-    }
-
     public String getRawData(String url, String css) {
         navigateTo(url);
         return waitForElement(By.cssSelector(css)).getAttribute("innerHTML");
@@ -45,5 +33,18 @@ public class BrowserFacade extends Locomotive {
 
     public void quitDriver() {
         driver.quit();
+    }
+
+
+    public static void main(String[] args) throws InterruptedException {
+        BrowserFacade bf = new BrowserFacade();
+
+        String url = "https://sportsbook.betsson.com/en/football/england/fa-premier-league";
+        String css = "body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div";
+
+        System.out.println(bf.getRawData(url, css));
+        System.out.println(bf.getText(url, css));
+
+        bf.driver.quit();
     }
 }
