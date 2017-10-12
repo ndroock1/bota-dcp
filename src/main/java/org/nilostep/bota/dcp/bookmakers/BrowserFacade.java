@@ -6,14 +6,16 @@ import io.ddavison.conductor.Locomotive;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-//@Config(
-//        url = "",
-//        browser = Browser.PHANTOMJS,
-//        hub = ""
-//)
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-@Config(browser = Browser.CHROME, url = "http://ddavison.io/tests/getting-started-with-selenium.htm")
+import static org.junit.Assert.fail;
+
+
+@Config(browser = Browser.CHROME)
 public class BrowserFacade extends Locomotive {
 
     private static Logger logger = LogManager.getLogger();
@@ -21,14 +23,41 @@ public class BrowserFacade extends Locomotive {
     public BrowserFacade() {
     }
 
-    public String getRawData(String url, String css) {
-        navigateTo(url);
-        return waitForElement(By.cssSelector(css)).getAttribute("innerHTML");
+    private List<WebElement> waitForElements(By by) {
+        int attempts = 0;
+        int size = driver.findElements(by).size();
+
+        while (size == 0) {
+            size = driver.findElements(by).size();
+
+            if (attempts == MAX_ATTEMPTS) fail(String.format("Could not find %s after %d seconds",
+                    by.toString(),
+                    MAX_ATTEMPTS));
+            attempts++;
+
+            try {
+                Thread.sleep(1000); // sleep for 1 second.
+            } catch (Exception x) {
+                fail("Failed due to an exception during Thread.sleep!");
+                x.printStackTrace();
+            }
+        }
+
+        if (size == 1) System.err.println("WARN: There is only 1 " + by.toString() + " 's!");
+        return driver.findElements(by);
     }
 
-    public String getText(String url, String css) {
+    public List<String> getRawData(String url, String css) {
+        List<String> out = new ArrayList<String>();
+
         navigateTo(url);
-        return waitForElement(By.cssSelector(css)).getAttribute("innerText");
+        List<WebElement> rows = waitForElements(By.cssSelector(css));
+        Iterator<WebElement> itr = rows.iterator();
+        while (itr.hasNext()) {
+            out.add(itr.next().getAttribute("innerHTML"));
+        }
+
+        return out;
     }
 
     public void quitDriver() {
@@ -40,10 +69,20 @@ public class BrowserFacade extends Locomotive {
         BrowserFacade bf = new BrowserFacade();
 
         String url = "https://sportsbook.betsson.com/en/football/england/fa-premier-league";
-        String css = "body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div";
+//        String css1 = "body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div";
+//        String css2 ="body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div > table > tbody > tr:nth-child(1)";
+        String css3 = "[data-gtm-cd-event]";
 
-        System.out.println(bf.getRawData(url, css));
-        System.out.println(bf.getText(url, css));
+// Event Description ( Bookmaker )
+// (?<=t">)(.*?)(?=<)
+
+// URL Event Markets
+// (?<=href=")(.*?)(?=")
+
+        List<String> raw = bf.getRawData(url, css3);
+        for (String s : raw) {
+            System.out.println(s);
+        }
 
         bf.driver.quit();
     }
