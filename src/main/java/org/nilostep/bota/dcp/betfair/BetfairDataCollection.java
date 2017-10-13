@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Component
-public class BetfairFacade {
+public class BetfairDataCollection {
 
     private BetfairClient client;
 
@@ -40,7 +40,7 @@ public class BetfairFacade {
     private Environment env;
 
 
-    public BetfairFacade() {
+    public BetfairDataCollection() {
     }
 
     public String test() {

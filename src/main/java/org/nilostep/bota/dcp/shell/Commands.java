@@ -1,6 +1,6 @@
 package org.nilostep.bota.dcp.shell;
 
-import org.nilostep.bota.dcp.betfair.BetfairFacade;
+import org.nilostep.bota.dcp.betfair.BetfairDataCollection;
 import org.nilostep.bota.dcp.data.domain.Competition;
 import org.nilostep.bota.dcp.data.domain.Event;
 import org.nilostep.bota.dcp.data.domain.Eventtype;
@@ -30,7 +30,7 @@ public class Commands {
     private EventRepository eventRepository;
 
     @Autowired
-    public BetfairFacade client;
+    public BetfairDataCollection client;
 
     @Autowired
     private Environment env;
