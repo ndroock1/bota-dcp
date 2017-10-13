@@ -47,7 +47,6 @@ public class BetfairFacade {
         return env.getProperty("bota.version");
     }
 
-    // ToDo: Add logging to updateBetfair();
     public int updateBetfair() {
         int out = 0;
 
@@ -125,10 +124,4 @@ public class BetfairFacade {
             }
         }
     }
-
-//public static void main(String[] args) {
-//        BetfairFacade bf = new BetfairFacade();
-//        System.out.println(bf.updateBetfair());
-//    }
-
 }

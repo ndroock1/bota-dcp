@@ -3,23 +3,18 @@ package org.nilostep.bota.dcp.data.domain;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Data
 @Entity
-public class ConfigBC {
+public class UnmatchedBCE {
 
     @Id
     @GeneratedValue
-    private Long bcId;
+    private Long bceId;
 
-    private String bcUrl;
+    private String eventDescription;
 
-    private String cssSelector;
-
-    private String rgxEventDescription;
-
-    private String rgxMarketUrl;
+    private String marketUrl;
 
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
@@ -28,6 +23,4 @@ public class ConfigBC {
     @ManyToOne
     @JoinColumn(name = "competition_id")
     private Competition competition;
-
-    private transient List<String> queryResult;
 }
