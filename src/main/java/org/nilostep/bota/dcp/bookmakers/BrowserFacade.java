@@ -11,6 +11,8 @@ import org.openqa.selenium.WebElement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.fail;
 
@@ -47,6 +49,18 @@ public class BrowserFacade extends Locomotive {
         return driver.findElements(by);
     }
 
+    public void addQueryResult(IQuery query) {
+        List<String> out = new ArrayList<String>();
+
+        navigateTo(query.getBcUrl());
+        List<WebElement> rows = waitForElements(By.cssSelector(query.getCssSelector()));
+        Iterator<WebElement> itr = rows.iterator();
+        while (itr.hasNext()) {
+            out.add(itr.next().getAttribute("innerHTML"));
+        }
+        query.setQueryResult(out);
+    }
+
     public List<String> getRawData(String url, String css) {
         List<String> out = new ArrayList<String>();
 
@@ -78,10 +92,17 @@ public class BrowserFacade extends Locomotive {
 
 // URL Event Markets
 // (?<=href=")(.*?)(?=")
+// (?<=a\sng-href=")(.*?)(?=")
 
         List<String> raw = bf.getRawData(url, css3);
+        Pattern p = Pattern.compile("(?<=t\">)(.*?)(?=<)|(?<=a\\sng-href=\")(.*?)(?=\")");
         for (String s : raw) {
-            System.out.println(s);
+            Matcher m = p.matcher(s);
+            m.find();
+            System.out.println(m.group());
+            m.find();
+            System.out.println(m.group());
+            //System.out.println(s);
         }
 
         bf.driver.quit();

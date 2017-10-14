@@ -13,4 +13,6 @@ public class Bookmaker {
     private String bookmakerId;
 
     private String bookmakerName;
+
+    private String bookmakerRootUrl;
 }

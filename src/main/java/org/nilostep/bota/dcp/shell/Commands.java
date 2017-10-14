@@ -1,6 +1,7 @@
 package org.nilostep.bota.dcp.shell;
 
-import org.nilostep.bota.dcp.betfair.BetfairDataCollection;
+import org.nilostep.bota.dcp.betfair.BetfairDataCollector;
+import org.nilostep.bota.dcp.bookmakers.BookmakerDataCollector;
 import org.nilostep.bota.dcp.data.domain.Competition;
 import org.nilostep.bota.dcp.data.domain.Event;
 import org.nilostep.bota.dcp.data.domain.Eventtype;
@@ -30,20 +31,27 @@ public class Commands {
     private EventRepository eventRepository;
 
     @Autowired
-    public BetfairDataCollection client;
+    public BetfairDataCollector betfairDataCollector;
+
+    @Autowired
+    public BookmakerDataCollector bookmakerDataCollector;
 
     @Autowired
     private Environment env;
 
-
     @ShellMethod("Version.")
     public String version() {
-        return env.getProperty("bota.version") + " : " + client.test();
+        return env.getProperty("bota.version") + " : " + betfairDataCollector.test();
     }
 
-    @ShellMethod("Do Betfair Update.")
-    public int doUpdate() {
-        return client.updateBetfair();
+    @ShellMethod("Collect Betfair Data.")
+    public int doBetfair() {
+        return betfairDataCollector.collectBetfairData();
+    }
+
+    @ShellMethod("Collect Bookmakers Data.")
+    public int doBookmakers() {
+        return bookmakerDataCollector.collectBookmakerData();
     }
 
     @ShellMethod("List Betfair EventTypes.")

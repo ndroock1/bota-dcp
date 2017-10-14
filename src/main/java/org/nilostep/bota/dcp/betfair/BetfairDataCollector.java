@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Component
-public class BetfairDataCollection {
+public class BetfairDataCollector {
 
     private BetfairClient client;
 
@@ -40,14 +40,14 @@ public class BetfairDataCollection {
     private Environment env;
 
 
-    public BetfairDataCollection() {
+    public BetfairDataCollector() {
     }
 
     public String test() {
         return env.getProperty("bota.version");
     }
 
-    public int updateBetfair() {
+    public int collectBetfairData() {
         int out = 0;
 
         if (client == null) {

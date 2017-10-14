@@ -1,13 +1,14 @@
 package org.nilostep.bota.dcp.data.domain;
 
 import lombok.Data;
+import org.nilostep.bota.dcp.bookmakers.IQuery;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Data
 @Entity
-public class ConfigBC {
+public class ConfigBC implements IQuery {
 
     @Id
     @GeneratedValue
@@ -17,9 +18,7 @@ public class ConfigBC {
 
     private String cssSelector;
 
-    private String rgxEventDescription;
-
-    private String rgxMarketUrl;
+    private String regexEventUrl;
 
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
