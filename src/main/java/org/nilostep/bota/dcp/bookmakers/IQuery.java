@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface IQuery {
 
-    String getBcUrl();
+    String getUrl();
 
     String getCssSelector();
 

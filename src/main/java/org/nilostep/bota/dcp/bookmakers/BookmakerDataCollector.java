@@ -1,11 +1,11 @@
 package org.nilostep.bota.dcp.bookmakers;
 
+import info.debatty.java.stringsimilarity.Cosine;
 import org.nilostep.bota.dcp.data.domain.ConfigBC;
+import org.nilostep.bota.dcp.data.domain.Event;
+import org.nilostep.bota.dcp.data.domain.MatchCandidate;
 import org.nilostep.bota.dcp.data.domain.UnmatchedBCE;
-import org.nilostep.bota.dcp.data.repository.BookmakerRepository;
-import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
-import org.nilostep.bota.dcp.data.repository.ConfigBCRepository;
-import org.nilostep.bota.dcp.data.repository.UnmatchedBCERepository;
+import org.nilostep.bota.dcp.data.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +29,12 @@ public class BookmakerDataCollector {
     @Autowired
     public UnmatchedBCERepository unmatchedBCERepository;
 
+    @Autowired
+    public EventRepository eventRepository;
+
+    @Autowired
+    public MatchCandidateRepository matchCandidateRepository;
+
     public BookmakerDataCollector() {
     }
 
@@ -40,6 +46,7 @@ public class BookmakerDataCollector {
         }
 
         configBCtoUnmatchedBCE();
+        unmatchedBCEtoMatchCandidate();
 
         if (bf != null) {
             bf.driver.quit();
@@ -78,4 +85,41 @@ public class BookmakerDataCollector {
         }
     }
 
+    private void unmatchedBCEtoMatchCandidate() {
+        Iterable<UnmatchedBCE> unmatchedBCES = unmatchedBCERepository.findAll();
+
+        for (UnmatchedBCE unmatchedBCE : unmatchedBCES) {
+            // Find all events in EventRepository for the unmatchedBCE competition
+            Iterable<Event> events = eventRepository.findByCompetition(unmatchedBCE.getCompetition());
+
+            MatchCandidate matchCandidateMaxSim = new MatchCandidate();
+            MatchCandidate matchCandidate = new MatchCandidate();
+
+            for (Event event : events) {
+                // Bookmaker eventdescription
+                matchCandidate.setEventDescriptionBookmaker(unmatchedBCE.getEventDescription());
+                // Betfair eventdescription
+                matchCandidate.setEventDescriptionBetfair(event.getName());
+                // Similarity type
+                matchCandidate.setSimilarityType("Cosine");
+                // Similarity measure
+                Cosine cosine = new Cosine();
+                matchCandidate.setSimilarity(cosine.similarity(unmatchedBCE.getEventDescription(), event.getName()));
+                // UnmatchedBCE
+                matchCandidate.setUnmatchedBCE(unmatchedBCE);
+                // Event
+                matchCandidate.setEvent(event);
+
+                if (matchCandidate.getSimilarity() > matchCandidateMaxSim.getSimilarity()) {
+                    matchCandidateMaxSim.setEventDescriptionBookmaker(matchCandidate.getEventDescriptionBookmaker());
+                    matchCandidateMaxSim.setEventDescriptionBetfair(matchCandidate.getEventDescriptionBetfair());
+                    matchCandidateMaxSim.setSimilarityType(matchCandidate.getSimilarityType());
+                    matchCandidateMaxSim.setSimilarity(matchCandidate.getSimilarity());
+                    matchCandidateMaxSim.setUnmatchedBCE(matchCandidate.getUnmatchedBCE());
+                    matchCandidateMaxSim.setEvent(matchCandidate.getEvent());
+                }
+            }
+            matchCandidateRepository.save(matchCandidateMaxSim);
+        }
+    }
 }

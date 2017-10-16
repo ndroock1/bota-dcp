@@ -52,7 +52,7 @@ public class BrowserFacade extends Locomotive {
     public void addQueryResult(IQuery query) {
         List<String> out = new ArrayList<String>();
 
-        navigateTo(query.getBcUrl());
+        navigateTo(query.getUrl());
         List<WebElement> rows = waitForElements(By.cssSelector(query.getCssSelector()));
         Iterator<WebElement> itr = rows.iterator();
         while (itr.hasNext()) {

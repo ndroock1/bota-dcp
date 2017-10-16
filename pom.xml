@@ -104,7 +104,6 @@
             <scope>provided</scope>
         </dependency>
 
-
         <!-- MySQL -->
         <dependency>
             <groupId>mysql</groupId>
@@ -118,22 +117,24 @@
             <version>1.0.0</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <!--<version>18.0</version>-->
             <version>23.0</version>
         </dependency>
-
-
-
 
         <!-- Conductor -->
         <dependency>
             <groupId>io.ddavison</groupId>
             <artifactId>conductor</artifactId>
             <version>3.0.1</version>
+        </dependency>
+
+        <!-- Java String Similarity -->
+        <dependency>
+            <groupId>info.debatty</groupId>
+            <artifactId>java-string-similarity</artifactId>
+            <version>RELEASE</version>
         </dependency>
 
         <!-- JUnit 4 -->
