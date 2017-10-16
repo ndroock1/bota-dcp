@@ -145,3 +145,13 @@ target/
 /src/main/resources/application.properties
 /spring-shell.log
 .idea/libraries/Maven__org_springframework_boot_spring_boot_starter_test_1_3_0_RELEASE.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_firefox_driver_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_remote_driver_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_java_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_api_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_edge_driver_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_opera_driver_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_safari_driver_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_support_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_chrome_driver_3_6_0.xml
+/.idea/libraries/Maven__org_seleniumhq_selenium_selenium_ie_driver_3_6_0.xml
