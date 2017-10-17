@@ -1,12 +1,14 @@
 package org.nilostep.bota.dcp.data.domain;
 
 import lombok.Data;
+import org.nilostep.bota.dcp.bookmakers.IQuery;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
-public class BookmakerEvent {
+public class BookmakerEvent implements IQuery {
 
     @Id
     @GeneratedValue
@@ -18,7 +20,9 @@ public class BookmakerEvent {
 
     private double similarity;
 
-    private String marketUrl;
+    private String Url;
+
+    private String CssSelector;
 
     @ManyToOne
     @JoinColumn(name = "id")
@@ -27,4 +31,6 @@ public class BookmakerEvent {
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
     private Bookmaker bookmaker;
+
+    private transient List<String> queryResult;
 }

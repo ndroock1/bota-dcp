@@ -20,6 +20,8 @@ public class ConfigBC implements IQuery {
 
     private String regexEventUrl;
 
+    private String eventCssSelector;
+
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
     private Bookmaker bookmaker;

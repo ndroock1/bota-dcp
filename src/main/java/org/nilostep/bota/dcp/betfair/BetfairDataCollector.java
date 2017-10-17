@@ -2,18 +2,19 @@ package org.nilostep.bota.dcp.betfair;
 
 
 import com.jbetfairng.BetfairClient;
-import com.jbetfairng.entities.CompetitionResult;
-import com.jbetfairng.entities.EventResult;
-import com.jbetfairng.entities.EventTypeResult;
-import com.jbetfairng.entities.MarketFilter;
+import com.jbetfairng.entities.*;
 import com.jbetfairng.enums.Exchange;
 import com.jbetfairng.exceptions.LoginException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nilostep.bota.dcp.data.domain.Competition;
 import org.nilostep.bota.dcp.data.domain.Event;
 import org.nilostep.bota.dcp.data.domain.Eventtype;
+import org.nilostep.bota.dcp.data.domain.Markettype;
 import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
 import org.nilostep.bota.dcp.data.repository.EventRepository;
 import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
+import org.nilostep.bota.dcp.data.repository.MarkettypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import java.util.List;
 
 @Component
 public class BetfairDataCollector {
+    private static Logger logger = LogManager.getLogger();
 
     private BetfairClient client;
 
@@ -35,6 +37,9 @@ public class BetfairDataCollector {
 
     @Autowired
     public EventRepository eventRepository;
+
+    @Autowired
+    public MarkettypeRepository markettypeRepository;
 
     @Autowired
     private Environment env;
@@ -66,11 +71,15 @@ public class BetfairDataCollector {
         updateEventtypes();
         updateCompetitions();
         updateEvents();
+        updateMarketTypes();
 
         return out;
     }
 
     private void updateEventtypes() {
+        //
+        logger.info("Betfair : EventTypes");
+        //
         MarketFilter filter = new MarketFilter();
         List<EventTypeResult> eventTypes = client.listEventTypes(filter).getResponse();
 
@@ -83,6 +92,9 @@ public class BetfairDataCollector {
     }
 
     private void updateCompetitions() {
+        //
+        logger.info("Betfair : Competitions");
+        //
         MarketFilter filter = new MarketFilter();
         List<EventTypeResult> eventTypes = client.listEventTypes(filter).getResponse();
 
@@ -103,6 +115,9 @@ public class BetfairDataCollector {
     }
 
     private void updateEvents() {
+        //
+        logger.info("Betfair : Events");
+        //
         MarketFilter filter = new MarketFilter();
         List<CompetitionResult> competitions = client.listCompetitions(filter).getResponse();
 
@@ -121,6 +136,27 @@ public class BetfairDataCollector {
                 bfE.setOpenDate(eventResult.getEvent().getOpenDate());
                 bfE.setCompetition(competitionRepository.findOne(competitionResult.getCompetition().getId()));
                 eventRepository.save(bfE);
+            }
+        }
+    }
+
+    private void updateMarketTypes() {
+        //
+        logger.info("Betfair : MarketTypes");
+        //
+        MarketFilter filter = new MarketFilter();
+        List<EventTypeResult> eventTypes = client.listEventTypes(filter).getResponse();
+
+        for (EventTypeResult eventTypeResult : eventTypes) {
+            filter = new MarketFilter();
+            filter.setEventTypeIds(new HashSet<String>(Collections.singleton(eventTypeResult.getEventType().getId())));
+            List<MarketTypeResult> marketTypeResults = client.listMarketTypes(filter).getResponse();
+
+            for (MarketTypeResult marketTypeResult : marketTypeResults) {
+                Markettype markettype = new Markettype();
+                markettype.setMarkettype(marketTypeResult.getMarketType());
+                markettype.setEventtype(eventtypeRepository.findOne(eventTypeResult.getEventType().getId()));
+                markettypeRepository.save(markettype);
             }
         }
     }

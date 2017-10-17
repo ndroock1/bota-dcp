@@ -49,16 +49,27 @@ public class BrowserFacade extends Locomotive {
         return driver.findElements(by);
     }
 
-    public void addQueryResult(IQuery query) {
+    public List<String> getQueryResult(IQuery query, String attribute) {
         List<String> out = new ArrayList<String>();
 
         navigateTo(query.getUrl());
+        //
+        logger.info("Scraping : " + query.getUrl());
+        //
         List<WebElement> rows = waitForElements(By.cssSelector(query.getCssSelector()));
         Iterator<WebElement> itr = rows.iterator();
         while (itr.hasNext()) {
-            out.add(itr.next().getAttribute("innerHTML"));
+            out.add(itr.next().getAttribute(attribute));
         }
-        query.setQueryResult(out);
+        return out;
+    }
+
+    public void addQueryResult(IQuery query) {
+        query.setQueryResult(getQueryResult(query, "innerText"));
+    }
+
+    public void addQueryResult(IQuery query, boolean raw) {
+        query.setQueryResult(getQueryResult(query, "innerHTML"));
     }
 
     public List<String> getRawData(String url, String css) {
