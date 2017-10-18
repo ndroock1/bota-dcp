@@ -9,8 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nilostep.bota.dcp.data.domain.Competition;
 import org.nilostep.bota.dcp.data.domain.Event;
-import org.nilostep.bota.dcp.data.domain.Eventtype;
-import org.nilostep.bota.dcp.data.domain.Markettype;
+import org.nilostep.bota.dcp.data.domain.*;
 import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
 import org.nilostep.bota.dcp.data.repository.EventRepository;
 import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
@@ -40,6 +39,7 @@ public class BetfairDataCollector {
 
     @Autowired
     public MarkettypeRepository markettypeRepository;
+    public MarkettypeId markettypeId;
 
     @Autowired
     private Environment env;
@@ -154,8 +154,12 @@ public class BetfairDataCollector {
 
             for (MarketTypeResult marketTypeResult : marketTypeResults) {
                 Markettype markettype = new Markettype();
-                markettype.setMarkettype(marketTypeResult.getMarketType());
-                markettype.setEventtype(eventtypeRepository.findOne(eventTypeResult.getEventType().getId()));
+
+                MarkettypeId markettypeId = new MarkettypeId();
+                markettypeId.setEventtype(eventtypeRepository.findOne(eventTypeResult.getEventType().getId()));
+                markettypeId.setMarkettype(marketTypeResult.getMarketType());
+
+                markettype.setMarkettypeId(markettypeId);
                 markettypeRepository.save(markettype);
             }
         }

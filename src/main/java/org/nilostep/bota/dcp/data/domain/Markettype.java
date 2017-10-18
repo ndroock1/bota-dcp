@@ -2,19 +2,13 @@ package org.nilostep.bota.dcp.data.domain;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
 
 @Data
 @Entity
 public class Markettype {
 
-    @Id
-    @GeneratedValue
-    private Long mtId;
-
-    @ManyToOne
-    @JoinColumn(name = "eventtype")
-    private Eventtype eventtype;
-
-    private String markettype;
+    @EmbeddedId
+    private MarkettypeId markettypeId;
 }
