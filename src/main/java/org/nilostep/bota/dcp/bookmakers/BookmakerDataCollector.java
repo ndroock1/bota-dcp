@@ -34,10 +34,13 @@ public class BookmakerDataCollector {
     public EventRepository eventRepository;
 
     @Autowired
-    public MatchCandidateRepository matchCandidateRepository;
+    public BookmakerEventRepository bookmakerEventRepository;
 
     @Autowired
-    public BookmakerEventRepository bookmakerEventRepository;
+    public ConfigBMRepository configBMRepository;
+
+    @Autowired
+    public BceMbORepository bceMbORepository;
 
     public BookmakerDataCollector() {
     }
@@ -50,7 +53,6 @@ public class BookmakerDataCollector {
         }
 
         configBCtoUnmatchedBCE();
-        // unmatchedBCEtoMatchCandidate();
         unmatchedBCEtoBookmakerEvent();
         bookmakerEventToBCEMbO();
 
@@ -89,43 +91,6 @@ public class BookmakerDataCollector {
                 unmatchedBCE.setEventDescription(m.group(0));
 
                 unmatchedBCERepository.save(unmatchedBCE);
-            }
-        }
-    }
-
-    private void unmatchedBCEtoMatchCandidate() {
-        Iterable<UnmatchedBCE> unmatchedBCES = unmatchedBCERepository.findAll();
-
-        for (UnmatchedBCE unmatchedBCE : unmatchedBCES) {
-            // Find all events in EventRepository for the unmatchedBCE competition
-            Iterable<Event> events = eventRepository.findByCompetition(unmatchedBCE.getCompetition());
-
-            MatchCandidate matchCandidateMaxSim = new MatchCandidate();
-            MatchCandidate matchCandidate = new MatchCandidate();
-
-            for (Event event : events) {
-
-                matchCandidate.setEventDescriptionBookmaker(unmatchedBCE.getEventDescription());
-                matchCandidate.setEventDescriptionBetfair(event.getName());
-                matchCandidate.setSimilarityType("Cosine");
-                // Similarity measure
-                Cosine cosine = new Cosine();
-                matchCandidate.setSimilarity(cosine.similarity(unmatchedBCE.getEventDescription(), event.getName()));
-                matchCandidate.setUnmatchedBCE(unmatchedBCE);
-                matchCandidate.setEvent(event);
-
-                if (matchCandidate.getSimilarity() > matchCandidateMaxSim.getSimilarity()) {
-                    matchCandidateMaxSim.setEventDescriptionBookmaker(matchCandidate.getEventDescriptionBookmaker());
-                    matchCandidateMaxSim.setEventDescriptionBetfair(matchCandidate.getEventDescriptionBetfair());
-                    matchCandidateMaxSim.setSimilarityType(matchCandidate.getSimilarityType());
-                    matchCandidateMaxSim.setSimilarity(matchCandidate.getSimilarity());
-                    matchCandidateMaxSim.setUnmatchedBCE(matchCandidate.getUnmatchedBCE());
-                    matchCandidateMaxSim.setEvent(matchCandidate.getEvent());
-                }
-
-            }
-            if (matchCandidateMaxSim.getEventDescriptionBetfair() != null) {
-                matchCandidateRepository.save(matchCandidateMaxSim);
             }
         }
     }
@@ -175,5 +140,25 @@ public class BookmakerDataCollector {
         for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
             bf.addQueryResult(bookmakerEvent);
         }
+
+        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
+            Iterable<ConfigBM> configBMS = configBMRepository.findByBookmaker(bookmakerEvent.getBookmaker());
+            String[] oddsRaw = bookmakerEvent.getQueryResult().toArray(new String[0]);
+
+            for (ConfigBM configBM : configBMS) {
+                Pattern p = Pattern.compile(configBM.getRegexOdds());
+                Matcher m = p.matcher(oddsRaw[configBM.getAddress()]);
+                for (int i = 0; i < configBM.getBetCount(); i++) {
+                    m.find();
+                    BceMbO bceMbO = new BceMbO();
+                    bceMbO.setBet("b" + String.valueOf(i + 1));
+                    bceMbO.setOdd(Double.valueOf(m.group()));
+                    bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
+                    bceMbO.setBookmakerEvent(bookmakerEvent);
+                    bceMbORepository.save(bceMbO);
+                }
+            }
+        }
+
     }
 }
