@@ -8,6 +8,7 @@ import org.nilostep.bota.dcp.data.domain.Eventtype;
 import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
 import org.nilostep.bota.dcp.data.repository.EventRepository;
 import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
+import org.nilostep.bota.dcp.export.ReadWriteFirebase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.shell.standard.ShellComponent;
@@ -37,6 +38,9 @@ public class Commands {
     public BookmakerDataCollector bookmakerDataCollector;
 
     @Autowired
+    public ReadWriteFirebase readWriteFirebase;
+
+    @Autowired
     private Environment env;
 
     @ShellMethod("Version.")
@@ -52,6 +56,11 @@ public class Commands {
     @ShellMethod("Collect Bookmakers Data.")
     public int doBookmakers() {
         return bookmakerDataCollector.collectBookmakerData();
+    }
+
+    @ShellMethod("Export Data to Firebase.")
+    public int exportToFirebase() {
+        return readWriteFirebase.export();
     }
 
     @ShellMethod("List Betfair EventTypes.")
