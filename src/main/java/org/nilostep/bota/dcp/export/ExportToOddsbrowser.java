@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 @Component
-public class ReadWriteFirebase {
+public class ExportToOddsbrowser {
 
     private static final String DATABASE_URL = "https://bota-313fb.firebaseio.com/";
 
@@ -63,7 +63,7 @@ public class ReadWriteFirebase {
         }
     }
 
-    public ReadWriteFirebase() {
+    public ExportToOddsbrowser() {
     }
 
     public int export(InputStream serviceAccount) {
@@ -135,7 +135,7 @@ public class ReadWriteFirebase {
     }
 
     public static void main(String[] args) throws Exception {
-        ReadWriteFirebase readWriteFirebase = new ReadWriteFirebase();
-        readWriteFirebase.export(readWriteFirebase.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+        ExportToOddsbrowser exportToOddsbrowser = new ExportToOddsbrowser();
+        exportToOddsbrowser.export(exportToOddsbrowser.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
     }
 }

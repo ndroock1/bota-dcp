@@ -8,7 +8,7 @@ import org.nilostep.bota.dcp.data.domain.Eventtype;
 import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
 import org.nilostep.bota.dcp.data.repository.EventRepository;
 import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
-import org.nilostep.bota.dcp.export.ReadWriteFirebase;
+import org.nilostep.bota.dcp.export.ExportToOddsbrowser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.shell.standard.ShellComponent;
@@ -40,7 +40,7 @@ public class Commands {
     public BookmakerDataCollector bookmakerDataCollector;
 
     @Autowired
-    public ReadWriteFirebase readWriteFirebase;
+    public ExportToOddsbrowser exportToOddsbrowser;
 
     @Autowired
     private Environment env;
@@ -61,8 +61,8 @@ public class Commands {
     }
 
     @ShellMethod("Export Data to Firebase.")
-    public int exportToFirebase() {
-        return readWriteFirebase.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+    public int exportToOddsbrowser() {
+        return exportToOddsbrowser.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
     }
 
     @ShellMethod("This is only a test.")
