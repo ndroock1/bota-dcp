@@ -15,6 +15,8 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.table.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +62,26 @@ public class Commands {
 
     @ShellMethod("Export Data to Firebase.")
     public int exportToFirebase() {
-        return readWriteFirebase.export();
+        return readWriteFirebase.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+    }
+
+    @ShellMethod("This is only a test.")
+    public int readFileFromJar() throws IOException {
+
+        System.out.println(System.getProperty("java.class.path"));
+
+        InputStream serviceAccount = this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json");
+
+        if (serviceAccount == null) {
+            return 1;
+        }
+        try {
+            System.out.println(serviceAccount.available());
+        } catch (IOException ioe) {
+            System.out.println("ERROR : " + ioe.getMessage());
+        }
+
+        return 0;
     }
 
     @ShellMethod("List Betfair EventTypes.")

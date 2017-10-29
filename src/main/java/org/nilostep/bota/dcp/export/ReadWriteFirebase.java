@@ -6,7 +6,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -66,7 +66,7 @@ public class ReadWriteFirebase {
     public ReadWriteFirebase() {
     }
 
-    public int export() {
+    public int export(InputStream serviceAccount) {
         int out = 0;
         try {
 
@@ -99,8 +99,6 @@ public class ReadWriteFirebase {
                 );
             }
 
-            // Initialize the app with a service account, granting admin privileges
-            FileInputStream serviceAccount = new FileInputStream("C:\\Users\\Nilo\\__DATA\\Mega\\DATA\\MyJavaProjects\\bota-dcp\\bota-6e0b33e3f1fe.json");
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .setDatabaseUrl(DATABASE_URL)
@@ -138,7 +136,6 @@ public class ReadWriteFirebase {
 
     public static void main(String[] args) throws Exception {
         ReadWriteFirebase readWriteFirebase = new ReadWriteFirebase();
-        readWriteFirebase.export();
+        readWriteFirebase.export(readWriteFirebase.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
     }
-
 }
