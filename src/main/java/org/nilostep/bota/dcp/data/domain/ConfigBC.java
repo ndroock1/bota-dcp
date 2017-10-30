@@ -20,6 +20,8 @@ public class ConfigBC implements IQuery {
 
     private String regexEventUrl;
 
+    private String eventJsPre;
+
     private String eventCssSelector;
 
     @ManyToOne

@@ -24,6 +24,8 @@ public class BookmakerEvent implements IQuery {
 
     private String CssSelector;
 
+    private String eventJsPre;
+
     @ManyToOne
     @JoinColumn(name = "id")
     private Event event;

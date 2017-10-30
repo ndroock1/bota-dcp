@@ -52,6 +52,7 @@ public class BookmakerDataCollector {
             bf = new BrowserFacade();
         }
 
+        cleanTables();
         configBCtoUnmatchedBCE();
         unmatchedBCEtoBookmakerEvent();
         bookmakerEventToBCEMbO();
@@ -61,6 +62,12 @@ public class BookmakerDataCollector {
         }
 
         return out;
+    }
+
+    private void cleanTables() {
+        bceMbORepository.deleteAll();
+        bookmakerEventRepository.deleteAll();
+        unmatchedBCERepository.deleteAll();
     }
 
     private void configBCtoUnmatchedBCE() {
@@ -121,6 +128,7 @@ public class BookmakerDataCollector {
                     bookmakerEventMaxSim.setEventDescriptionBookmaker(bookmakerEvent.getEventDescriptionBookmaker());
                     bookmakerEventMaxSim.setUrl(bookmakerEvent.getUrl());
                     bookmakerEventMaxSim.setCssSelector(bookmakerEvent.getCssSelector());
+                    bookmakerEventMaxSim.setEventJsPre(bookmakerEvent.getEventJsPre());
                     bookmakerEventMaxSim.setSimilarityType(bookmakerEvent.getSimilarityType());
                     bookmakerEventMaxSim.setSimilarity(bookmakerEvent.getSimilarity());
                     bookmakerEventMaxSim.setEvent(bookmakerEvent.getEvent());

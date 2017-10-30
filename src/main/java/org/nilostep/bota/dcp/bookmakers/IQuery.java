@@ -8,5 +8,7 @@ public interface IQuery {
 
     String getCssSelector();
 
+    String getEventJsPre();
+
     void setQueryResult(List<String> result);
 }

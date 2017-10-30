@@ -6,6 +6,7 @@ import io.ddavison.conductor.Locomotive;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
@@ -23,6 +24,22 @@ public class BrowserFacade extends Locomotive {
     private static Logger logger = LogManager.getLogger();
 
     public BrowserFacade() {
+        this.MAX_ATTEMPTS = 60;
+        this.MAX_TIMEOUT = 10;
+    }
+
+    private void executeJS(String js, int wait) {
+        try {
+            Thread.sleep(wait);
+            ((JavascriptExecutor) driver).executeScript(js);
+            Thread.sleep(wait);
+        } catch (InterruptedException inte) {
+            System.out.println("Thread interrupted while executing JS : " + inte.getMessage());
+        }
+    }
+
+    private void executeJS(String js) {
+        executeJS(js, 0);
     }
 
     private List<WebElement> waitForElements(By by) {
@@ -49,13 +66,18 @@ public class BrowserFacade extends Locomotive {
         return driver.findElements(by);
     }
 
-    public List<String> getQueryResult(IQuery query, String attribute) {
+    private List<String> getQueryResult(IQuery query, String attribute) {
         List<String> out = new ArrayList<String>();
 
         navigateTo(query.getUrl());
         //
         logger.info("Scraping : " + query.getUrl());
         //
+
+        if (query.getEventJsPre() != null && query.getEventJsPre() != "") {
+            executeJS(query.getEventJsPre());
+        }
+
         List<WebElement> rows = waitForElements(By.cssSelector(query.getCssSelector()));
         Iterator<WebElement> itr = rows.iterator();
         while (itr.hasNext()) {
