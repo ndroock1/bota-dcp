@@ -12,6 +12,8 @@ public class ConfigBM {
     @GeneratedValue
     private Long bmId;
 
+    private int selected;
+
     private int address;
 
     private String regexOdds;

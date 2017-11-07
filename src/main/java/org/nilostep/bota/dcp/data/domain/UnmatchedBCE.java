@@ -18,6 +18,8 @@ public class UnmatchedBCE {
 
     private String marketCssSelector;
 
+    private String eventJsPre;
+
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
     private Bookmaker bookmaker;

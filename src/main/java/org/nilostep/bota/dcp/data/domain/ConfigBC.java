@@ -14,6 +14,10 @@ public class ConfigBC implements IQuery {
     @GeneratedValue
     private Long bcId;
 
+    private int selected;
+
+    private int type;
+
     private String url;
 
     private String cssSelector;

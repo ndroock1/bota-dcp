@@ -4,6 +4,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -17,6 +19,8 @@ import java.util.concurrent.CountDownLatch;
 
 @Component
 public class ExportToOddsbrowser {
+
+    private static Logger logger = LogManager.getLogger();
 
     private static final String DATABASE_URL = "https://bota-313fb.firebaseio.com/";
 
@@ -83,6 +87,10 @@ public class ExportToOddsbrowser {
                 String s = rs.getString("eventName");
                 double d = rs.getDouble("Odd");
 
+//                //
+//                logger.info("Export : " + x + ":" + s + ":" + d);
+//                //
+
                 oddRecordMap.put(rs.getString("bo_id"),
                         new OddRecord(
                                 rs.getString("Bet"),
@@ -114,19 +122,35 @@ public class ExportToOddsbrowser {
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            System.out.println("onDataChange: " + dataSnapshot);
+//                            System.out.println("onDataChange: " + dataSnapshot);
                             latch.countDown();
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-                            System.out.println("onCanceled: " + databaseError);
+//                            System.out.println("onCanceled: " + databaseError);
                             latch.countDown();
                         }
                     });
             latch.await();
 
-            ref.setValueAsync(oddRecordMap);
+            //
+            logger.info("Exporting : " + oddRecordMap.size());
+            //
+
+//            ref.setValueAsync(oddRecordMap);
+
+            ref.setValue(oddRecordMap, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError != null) {
+                        System.out.println("Data could not be saved " + databaseError.getMessage());
+                    } else {
+                        System.out.println("Data saved successfully.");
+                    }
+                }
+            });
+
             ref.getDatabase().getApp().delete();
         } catch (Exception e) {
             System.out.println("Export FAIL " + e.getMessage());

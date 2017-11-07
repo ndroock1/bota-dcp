@@ -1,5 +1,7 @@
 package org.nilostep.bota.dcp.shell;
 
+import info.debatty.java.stringsimilarity.Cosine;
+import info.debatty.java.stringsimilarity.JaroWinkler;
 import org.nilostep.bota.dcp.betfair.BetfairDataCollector;
 import org.nilostep.bota.dcp.bookmakers.BookmakerDataCollector;
 import org.nilostep.bota.dcp.data.domain.Competition;
@@ -67,7 +69,7 @@ public class Commands {
 
     @ShellMethod("This is only a test.")
     public int readFileFromJar() throws IOException {
-
+        // #1
         System.out.println(System.getProperty("java.class.path"));
 
         InputStream serviceAccount = this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json");
@@ -80,6 +82,30 @@ public class Commands {
         } catch (IOException ioe) {
             System.out.println("ERROR : " + ioe.getMessage());
         }
+
+        // #2
+        String sField = "Excelsior v Roda JC Kerkrade";
+        String[] sArr = sField.split("\\sv\\s");
+        for (int i = 0; i < sArr.length; i++) {
+            System.out.println(" > " + sArr[i]);
+        }
+
+        sField = "String 1";
+        String sField1 = "Next";
+        System.out.println(sField.concat(";").concat(sField1));
+
+        String[] sNamesBCE = "Leicester City v Manchester City".split(" v ");
+        String[] sNamesCE = "Leicester v Man City".split(" v ");
+
+        Cosine cosine = new Cosine();
+        System.out.println("Cosine");
+        System.out.println(cosine.similarity(sNamesBCE[0], sNamesCE[0]));
+        System.out.println(cosine.similarity(sNamesBCE[1], sNamesCE[1]));
+
+        JaroWinkler jaroWinkler = new JaroWinkler();
+        System.out.println("Jaro-Winkler");
+        System.out.println(jaroWinkler.similarity(sNamesBCE[0], sNamesCE[0]));
+        System.out.println(jaroWinkler.similarity(sNamesBCE[1], sNamesCE[1]));
 
         return 0;
     }

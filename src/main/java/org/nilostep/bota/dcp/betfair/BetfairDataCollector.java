@@ -10,10 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.nilostep.bota.dcp.data.domain.Competition;
 import org.nilostep.bota.dcp.data.domain.Event;
 import org.nilostep.bota.dcp.data.domain.*;
-import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
-import org.nilostep.bota.dcp.data.repository.EventRepository;
-import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
-import org.nilostep.bota.dcp.data.repository.MarkettypeRepository;
+import org.nilostep.bota.dcp.data.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -42,6 +39,15 @@ public class BetfairDataCollector {
     public MarkettypeId markettypeId;
 
     @Autowired
+    public BceMbORepository bceMbORepository;
+
+    @Autowired
+    public BookmakerEventRepository bookmakerEventRepository;
+
+    @Autowired
+    public UnmatchedBCERepository unmatchedBCERepository;
+
+    @Autowired
     private Environment env;
 
 
@@ -68,12 +74,21 @@ public class BetfairDataCollector {
             }
         }
 
+        cleanTables();
         updateEventtypes();
         updateCompetitions();
         updateEvents();
         updateMarketTypes();
 
         return out;
+    }
+
+    private void cleanTables() {
+        bceMbORepository.deleteAll();
+        bookmakerEventRepository.deleteAll();
+        unmatchedBCERepository.deleteAll();
+
+        eventRepository.deleteAll();
     }
 
     private void updateEventtypes() {

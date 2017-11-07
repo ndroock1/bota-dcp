@@ -25,10 +25,14 @@ public class BrowserFacade extends Locomotive {
 
     public BrowserFacade() {
         this.MAX_ATTEMPTS = 60;
-        this.MAX_TIMEOUT = 10;
+        this.MAX_TIMEOUT = 30;
     }
 
     private void executeJS(String js, int wait) {
+        //
+        logger.info("executeJS : " + js);
+        //
+
         try {
             Thread.sleep(wait);
             ((JavascriptExecutor) driver).executeScript(js);
@@ -49,9 +53,10 @@ public class BrowserFacade extends Locomotive {
         while (size == 0) {
             size = driver.findElements(by).size();
 
-            if (attempts == MAX_ATTEMPTS) fail(String.format("Could not find %s after %d seconds",
-                    by.toString(),
-                    MAX_ATTEMPTS));
+//            if (attempts == MAX_ATTEMPTS) fail(String.format("Could not find %s after %d seconds", by.toString(), MAX_ATTEMPTS));
+            if (attempts == MAX_ATTEMPTS) {
+                throw new TooManyAttemptsException();
+            }
             attempts++;
 
             try {
@@ -70,12 +75,16 @@ public class BrowserFacade extends Locomotive {
         List<String> out = new ArrayList<String>();
 
         navigateTo(query.getUrl());
+
         //
-        logger.info("Scraping : " + query.getUrl());
+        logger.info("Scraping : " + query.getUrl() + query.getEventJsPre());
         //
 
         if (query.getEventJsPre() != null && query.getEventJsPre() != "") {
-            executeJS(query.getEventJsPre());
+            String[] sArr = query.getEventJsPre().split(";");
+            for (int i = 0; i < sArr.length; i++) {
+                executeJS(sArr[i], 1500);
+            }
         }
 
         List<WebElement> rows = waitForElements(By.cssSelector(query.getCssSelector()));

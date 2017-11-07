@@ -34,5 +34,7 @@ public class BookmakerEvent implements IQuery {
     @JoinColumn(name = "bookmaker_id")
     private Bookmaker bookmaker;
 
+    private int hasPayload;
+
     private transient List<String> queryResult;
 }
