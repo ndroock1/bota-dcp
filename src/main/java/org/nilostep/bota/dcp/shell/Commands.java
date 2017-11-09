@@ -1,7 +1,6 @@
 package org.nilostep.bota.dcp.shell;
 
-import info.debatty.java.stringsimilarity.Cosine;
-import info.debatty.java.stringsimilarity.JaroWinkler;
+import info.debatty.java.stringsimilarity.*;
 import org.nilostep.bota.dcp.betfair.BetfairDataCollector;
 import org.nilostep.bota.dcp.bookmakers.BookmakerDataCollector;
 import org.nilostep.bota.dcp.data.domain.Competition;
@@ -94,8 +93,30 @@ public class Commands {
         String sField1 = "Next";
         System.out.println(sField.concat(";").concat(sField1));
 
-        String[] sNamesBCE = "Leicester City v Manchester City".split(" v ");
-        String[] sNamesCE = "Leicester v Man City".split(" v ");
+        printSimilarities("Manchester United v Brighton", "Man Utd v Brighton");
+        printSimilarities("Wolfsburg v Freiburg", "Augsburg v Wolfsburg");
+        printSimilarities("Mainz v FC Koln", "Mainz v Cologne");
+        printSimilarities("Hertha BSC Berlin v Borussion Monchengladbach", "Hertha Berlin v Mgladbach");
+        printSimilarities("Malaga v Dep La Coruna", "Malaga v Deportivo");
+        printSimilarities("Valencia v Barcelona", "Leganes v Barcelona");
+
+        System.out.println(isSimilar("Manchester United v Brighton", "Man Utd v Brighton"));
+        System.out.println(isSimilar("Wolfsburg v Freiburg", "Augsburg v Wolfsburg"));
+        System.out.println(isSimilar("Mainz v FC Koln", "Mainz v Cologne"));
+        System.out.println(isSimilar("Hertha BSC Berlin v Borussion Monchengladbach", "Hertha Berlin v Mgladbach"));
+        System.out.println(isSimilar("Malaga v Dep La Coruna", "Malaga v Deportivo"));
+        System.out.println(isSimilar("Valencia v Barcelona", "Leganes v Barcelona"));
+
+        return 0;
+    }
+
+    private void printSimilarities(String sBCE, String sCE) {
+        String[] sNamesBCE = sBCE.split(" v ");
+        String[] sNamesCE = sCE.split(" v ");
+
+        System.out.println(sBCE);
+        System.out.println(sCE);
+        System.out.println(">>");
 
         Cosine cosine = new Cosine();
         System.out.println("Cosine");
@@ -107,7 +128,62 @@ public class Commands {
         System.out.println(jaroWinkler.similarity(sNamesBCE[0], sNamesCE[0]));
         System.out.println(jaroWinkler.similarity(sNamesBCE[1], sNamesCE[1]));
 
-        return 0;
+        System.out.println("Jaro-Winkler - CROSS");
+        System.out.println(jaroWinkler.similarity(sNamesBCE[0], sNamesCE[1]));
+        System.out.println(jaroWinkler.similarity(sNamesBCE[1], sNamesCE[0]));
+
+        SorensenDice sorensenDice = new SorensenDice();
+        System.out.println("Sorensen-Dice");
+        System.out.println(sorensenDice.similarity(sNamesBCE[0], sNamesCE[0]));
+        System.out.println(sorensenDice.similarity(sNamesBCE[1], sNamesCE[1]));
+
+        NormalizedLevenshtein normalizedLevenshtein = new NormalizedLevenshtein();
+        System.out.println("Normalized-Levenshtein");
+        System.out.println(normalizedLevenshtein.similarity(sNamesBCE[0], sNamesCE[0]));
+        System.out.println(normalizedLevenshtein.similarity(sNamesBCE[1], sNamesCE[1]));
+
+        MetricLCS metricLCS = new MetricLCS();
+        System.out.println("Metric Longest Common Subsequence");
+        System.out.println(1 - metricLCS.distance(sNamesBCE[0], sNamesCE[0]));
+        System.out.println(1 - metricLCS.distance(sNamesBCE[1], sNamesCE[1]));
+
+        Levenshtein levenshtein = new Levenshtein();
+        System.out.println("Levenshtein");
+        System.out.println(levenshtein.distance(sNamesBCE[0], sNamesCE[0]));
+        System.out.println(levenshtein.distance(sNamesBCE[1], sNamesCE[1]));
+
+    }
+
+    private boolean isSimilar(String sBCE, String sCE) {
+        System.out.println(sBCE);
+        System.out.println(sCE);
+        System.out.println(">>");
+
+        String[] sNamesBCE = sBCE.split(" v ");
+        String[] sNamesCE = sCE.split(" v ");
+
+        JaroWinkler jaroWinkler = new JaroWinkler();
+        if (jaroWinkler.similarity(sNamesBCE[0], sNamesCE[0]) < 0.45d ||
+                jaroWinkler.similarity(sNamesBCE[1], sNamesCE[1]) < 0.45d) {
+
+            // Rejected :
+            Cosine cosine = new Cosine();
+            return cosine.similarity(sNamesBCE[0], sNamesCE[0]) > 0.45d &&
+                    cosine.similarity(sNamesBCE[1], sNamesCE[1]) > 0.45d;
+
+            // Accepted :
+        } else {
+            // Check if acccept is correct
+            double d01 = jaroWinkler.similarity(sNamesBCE[0], sNamesCE[1]);
+            double d10 = jaroWinkler.similarity(sNamesBCE[1], sNamesCE[0]);
+            if (d01 > 0.95d || d10 > 0.95d) {
+
+                return jaroWinkler.similarity(sNamesBCE[0], sNamesCE[0]) > 0.9d ||
+                        jaroWinkler.similarity(sNamesBCE[1], sNamesCE[1]) > 0.9d;
+            } else {
+                return true;
+            }
+        }
     }
 
     @ShellMethod("List Betfair EventTypes.")

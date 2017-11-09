@@ -1,7 +1,6 @@
 package org.nilostep.bota.dcp.bookmakers;
 
 import info.debatty.java.stringsimilarity.Cosine;
-import info.debatty.java.stringsimilarity.JaroWinkler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nilostep.bota.dcp.data.domain.*;
@@ -9,6 +8,10 @@ import org.nilostep.bota.dcp.data.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +20,11 @@ public class BookmakerDataCollector {
 
     private static Logger logger = LogManager.getLogger();
 
-    private static final double COSINE_THRESHOLD = 0.5d;
+    private static final double COSINE_THRESHOLD = 0.4d;
+
+    private static final double JAROWINKLER_THRESHOLD = 0.4d;
+
+    private static final double NORMALIZED_LEVENSHTEIN_THRESHOLD = 0.4d;
 
     private BrowserFacade bf;
 
@@ -190,22 +197,18 @@ public class BookmakerDataCollector {
     }
 
     private void validateBookmakerEvent() {
-        Iterable<BookmakerEvent> bookmakerEvents = bookmakerEventRepository.findAll();
+        try {
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/oddsbrowser",
+                    "root",
+                    "");
 
-        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
-            Event event = eventRepository.findOne(bookmakerEvent.getEvent().getId());
-            String[] sNamesBCE = bookmakerEvent.getEventDescriptionBookmaker().split(" v ");
-            String[] sNamesCE = event.getName().split(" v ");
+            CallableStatement statement = con.prepareCall("{call sp_delete_duplicates()}");
+            statement.execute();
+            statement.close();
 
-            // Delete BCE if similarity measure < threshold
-            JaroWinkler jaroWinkler = new JaroWinkler();
-            if (sNamesCE.length < 2 ||
-                    jaroWinkler.similarity(sNamesBCE[0], sNamesCE[0]) < COSINE_THRESHOLD ||
-                    jaroWinkler.similarity(sNamesBCE[1], sNamesCE[1]) < COSINE_THRESHOLD
-                    ) {
-                bookmakerEventRepository.delete(bookmakerEvent.getBeId());
-            }
-
+        } catch (SQLException se) {
+            System.out.println("Duplicate FAIL " + se.getMessage());
         }
     }
 
