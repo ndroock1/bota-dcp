@@ -20,13 +20,9 @@ public class BookmakerDataCollector {
 
     private static Logger logger = LogManager.getLogger();
 
-    private static final double COSINE_THRESHOLD = 0.4d;
-
-    private static final double JAROWINKLER_THRESHOLD = 0.4d;
-
-    private static final double NORMALIZED_LEVENSHTEIN_THRESHOLD = 0.4d;
-
     private BrowserFacade bf;
+
+    private ParallelQuery pq;
 
     @Autowired
     public BookmakerRepository bookmakerRepository;
@@ -60,6 +56,10 @@ public class BookmakerDataCollector {
 
         if (bf == null) {
             bf = new BrowserFacade();
+        }
+
+        if (pq == null) {
+            pq = new ParallelQuery();
         }
 
         cleanTables();
@@ -135,6 +135,8 @@ public class BookmakerDataCollector {
                             break;
 
                         default:
+                            // EventJSPre for Event
+                            unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
                             // MarketURL for Event
                             m = p.matcher(html);
                             m.find();
@@ -215,23 +217,33 @@ public class BookmakerDataCollector {
     private void addBCEPayload() {
         Iterable<BookmakerEvent> bookmakerEvents = bookmakerEventRepository.findAll();
 
+        pq.submitQuery(bookmakerEvents);
+
+//        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
+//            if (bookmakerEvent.getHasPayload() == 0) {
+//
+//                try {
+//
+//                    bf.addQueryResult(bookmakerEvent);
+//
+//                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+//                    logger.info(">> StaleElementReferenceException @ " +
+//                            bookmakerEvent.getEventDescriptionBookmaker());
+//
+//                } catch (TooManyAttemptsException tmae) {
+//                    logger.info(">> TooManyAttemptsException @ " +
+//                            bookmakerEvent.getEventDescriptionBookmaker());
+//                }
+//
+//            }
+//        }
+
         for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
-            if (bookmakerEvent.getHasPayload() == 0) {
+            if (bookmakerEvent.getHasPayload() == 0 && bookmakerEvent.getQueryResult() != null) {
 
-                try {
-                    bf.addQueryResult(bookmakerEvent);
-                    bookmakerEventToBCEMbO(bookmakerEvent);
-                    bookmakerEvent.setHasPayload(1);
-                    bookmakerEventRepository.save(bookmakerEvent);
-
-                } catch (org.openqa.selenium.StaleElementReferenceException e) {
-                    logger.info(">> StaleElementReferenceException @ " +
-                            bookmakerEvent.getEventDescriptionBookmaker());
-                } catch (TooManyAttemptsException tmae) {
-                    logger.info(">> TooManyAttemptsException @ " +
-                            bookmakerEvent.getEventDescriptionBookmaker());
-                }
-
+                bookmakerEventToBCEMbO(bookmakerEvent);
+                bookmakerEvent.setHasPayload(1);
+                bookmakerEventRepository.save(bookmakerEvent);
             }
         }
     }
