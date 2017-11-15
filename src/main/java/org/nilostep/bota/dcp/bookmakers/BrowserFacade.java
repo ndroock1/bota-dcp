@@ -58,7 +58,7 @@ public class BrowserFacade extends Locomotive {
             attempts++;
 
             try {
-                Thread.sleep(1000); // sleep for 1 second.
+                Thread.sleep(250); // sleep for 1 second.
             } catch (Exception x) {
                 fail("Failed due to an exception during Thread.sleep!");
                 x.printStackTrace();
@@ -101,50 +101,7 @@ public class BrowserFacade extends Locomotive {
         query.setQueryResult(getQueryResult(query, "innerHTML"));
     }
 
-//    public List<String> getRawData(String url, String css) {
-//        List<String> out = new ArrayList<String>();
-//
-//        navigateTo(url);
-//        List<WebElement> rows = waitForElements(By.cssSelector(css));
-//        Iterator<WebElement> itr = rows.iterator();
-//        while (itr.hasNext()) {
-//            out.add(itr.next().getAttribute("innerHTML"));
-//        }
-//
-//        return out;
-//    }
-
     public void quitDriver() {
         driver.quit();
-    }
-
-
-    public static void main(String[] args) throws InterruptedException {
-//        BrowserFacade bf = new BrowserFacade();
-
-//        String url = "https://sportsbook.betsson.com/en/football/england/fa-premier-league";
-//        String css1 = "body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div";
-//        String css2 ="body > div:nth-child(3) > section > div > section > div > div > div > div.main-outer-view.theme-default > div.row.main-sportsbook-container > section > div > section > div > div > div > div:nth-child(1) > bssn-multiple-events-table > div > table > tbody > tr:nth-child(1)";
-//        String css3 = "[data-gtm-cd-event]";
-
-// Event Description ( Bookmaker )
-// (?<=t">)(.*?)(?=<)
-
-// URL Event Markets
-// (?<=href=")(.*?)(?=")
-// (?<=a\sng-href=")(.*?)(?=")
-
-//        List<String> raw = bf.getRawData(url, css3);
-//        Pattern p = Pattern.compile("(?<=t\">)(.*?)(?=<)|(?<=a\\sng-href=\")(.*?)(?=\")");
-//        for (String s : raw) {
-//            Matcher m = p.matcher(s);
-//            m.find();
-//            System.out.println(m.group());
-//            m.find();
-//            System.out.println(m.group());
-//            //System.out.println(s);
-//        }
-//
-//        bf.driver.quit();
     }
 }

@@ -117,22 +117,22 @@ public class ExportToOddsbrowser {
                     .getInstance(DATABASE_URL)
                     .getReference("testdata");
 
-            final CountDownLatch latch = new CountDownLatch(1);
+//            final CountDownLatch latch = new CountDownLatch(1);
             ref.addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
 //                            System.out.println("onDataChange: " + dataSnapshot);
-                            latch.countDown();
+//                            latch.countDown();
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
 //                            System.out.println("onCanceled: " + databaseError);
-                            latch.countDown();
+//                            latch.countDown();
                         }
                     });
-            latch.await();
+//            latch.await();
 
             //
             logger.info("Exporting : " + oddRecordMap.size());
@@ -140,16 +140,22 @@ public class ExportToOddsbrowser {
 
 //            ref.setValueAsync(oddRecordMap);
 
+            final CountDownLatch latch = new CountDownLatch(1);
             ref.setValue(oddRecordMap, new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError != null) {
                         System.out.println("Data could not be saved " + databaseError.getMessage());
+                        latch.countDown();
                     } else {
                         System.out.println("Data saved successfully.");
+                        latch.countDown();
                     }
                 }
             });
+
+            latch.await();
+
 
             ref.getDatabase().getApp().delete();
         } catch (Exception e) {

@@ -38,7 +38,7 @@ public class ParallelQuery {
 
         if (reqQ.size() > 0) {
 
-            int n = 4;
+            int n = 6;
             final CountDownLatch finish = new CountDownLatch(n);
             for (int i = 0; i < n; i++) {
                 workers.add(new QueryWorker(i, reqQ, resQ, finish));

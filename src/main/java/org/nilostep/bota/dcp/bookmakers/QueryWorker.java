@@ -53,13 +53,22 @@ public class QueryWorker {
                 IQuery iQuery = reqQ.poll();
                 if (iQuery != null) {
 
-                    browser.addQueryResult(iQuery);
-                    resQ.add(iQuery);
+                    try {
+                        browser.addQueryResult(iQuery);
+                        resQ.add(iQuery);
+
+                    } catch (RuntimeException rte) {
+                        active = false;
+                        reqQ.add(iQuery);
+                    }
 
                 } else {
                     active = false;
                 }
             }
+            //
+            logger.info("STOPPING... QueryWorker: " + id);
+            //
             countDownLatch.countDown();
         }
     }

@@ -10,6 +10,7 @@ import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
 import org.nilostep.bota.dcp.data.repository.EventRepository;
 import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
 import org.nilostep.bota.dcp.export.ExportToOddsbrowser;
+import org.nilostep.bota.dcp.export.OddsBrowserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.shell.standard.ShellComponent;
@@ -44,6 +45,9 @@ public class Commands {
     public ExportToOddsbrowser exportToOddsbrowser;
 
     @Autowired
+    public OddsBrowserUtil oddsBrowserUtil;
+
+    @Autowired
     private Environment env;
 
     @ShellMethod("Version.")
@@ -64,6 +68,11 @@ public class Commands {
     @ShellMethod("Export Data to Firebase.")
     public int exportToOddsbrowser() {
         return exportToOddsbrowser.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+    }
+
+    @ShellMethod("Clean Firebase.")
+    public int cleanFirebase() {
+        return oddsBrowserUtil.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
     }
 
     @ShellMethod("This is only a test.")
@@ -89,6 +98,8 @@ public class Commands {
             System.out.println(" > " + sArr[i]);
         }
 
+        String x = "Burnley &nbsp; v &nbsp;&nbsp;Swansea";
+
         sField = "String 1";
         String sField1 = "Next";
         System.out.println(sField.concat(";").concat(sField1));
@@ -107,6 +118,9 @@ public class Commands {
         System.out.println(isSimilar("Malaga v Dep La Coruna", "Malaga v Deportivo"));
         System.out.println(isSimilar("Valencia v Barcelona", "Leganes v Barcelona"));
 
+        String event = "/bet/en-gb/betting/e/11345293/Dutch+Eredivisie+2017+18+%2d+Outright.html";
+        System.out.println(" v  >>" + event.indexOf(" v "));
+        System.out.println(" -  >>" + event.indexOf(" - "));
         return 0;
     }
 
