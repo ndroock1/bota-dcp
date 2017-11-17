@@ -20,8 +20,6 @@ public class BookmakerDataCollector {
 
     private static Logger logger = LogManager.getLogger();
 
-    private BrowserFacade bf;
-
     private ParallelQuery pq;
 
     @Autowired
@@ -54,135 +52,124 @@ public class BookmakerDataCollector {
     public int collectBookmakerData() {
         int out = 0;
 
-        if (bf == null) {
-            bf = new BrowserFacade();
-        }
-
-        if (pq == null) {
-            pq = new ParallelQuery();
-        }
-
         cleanTables();
-        configBCtoUnmatchedBCE();
+
+        pq = new ParallelQuery();
+        for (int k = 0; k < 2; k++) {
+            addConfigBCPayload();
+        }
         unmatchedBCEtoBookmakerEvent();
         validateBookmakerEvent();
+
+        pq = new ParallelQuery();
         for (int k = 0; k < 2; k++) {
             addBCEPayload();
-        }
-
-        if (bf != null) {
-            bf.driver.quit();
         }
 
         return out;
     }
 
     private void cleanTables() {
+        Iterable<ConfigBC> configBCS = configBCRepository.findAll();
+        for (ConfigBC configBC : configBCS) {
+            configBC.setHasPayload(0);
+            configBCRepository.save(configBC);
+        }
         bceMbORepository.deleteAll();
         bookmakerEventRepository.deleteAll();
         unmatchedBCERepository.deleteAll();
     }
 
-    private void configBCtoUnmatchedBCE() {
+    private void addConfigBCPayload() {
         Iterable<ConfigBC> configBCS = configBCRepository.findAll();
 
+        boolean doQuery = false;
         for (ConfigBC configBC : configBCS) {
-
-            if (configBC.getSelected() == 1) {
-
-                try {
-                    bf.addQueryResult(configBC, true);
-                }
-
-                catch (org.openqa.selenium.StaleElementReferenceException e) {
-
-                    try {
-                        Thread.sleep(2500);
-                        bf.addQueryResult(configBC, true);
-
-                    } catch (InterruptedException e1) {
-
-                    } catch (org.openqa.selenium.StaleElementReferenceException st) {
-                        System.out.println(">> StaleCrash @ " + configBC.getUrl() + " : " + e.getMessage());
-                    }
-
-//
-// ToDo: Handle the skipped competition ( How ? )
-
-                } catch (TooManyAttemptsException tmae) {
-
-                    System.out.println(">> Too many attemts @ " + configBC.getUrl() + " : " + tmae.getMessage());
-                }
-
-//
+            if (configBC.getHasPayload() == 0 && configBC.getSelected() == 1) {
+                doQuery = true;
+                break;
             }
+        }
+
+        if (doQuery) {
+            pq.submitQuery(configBCS);
         }
 
         for (ConfigBC configBC : configBCS) {
             if (configBC.getSelected() == 1) {
+                if (configBC.getHasPayload() == 0 && configBC.getQueryResult() != null) {
 
-                Pattern p = Pattern.compile(configBC.getRegexEventUrl());
+                    configBCtoUnmatchedBCE(configBC);
+                    configBC.setHasPayload(1);
+                    configBCRepository.save(configBC);
+                }
+            }
+        }
+    }
 
-                for (String html : configBC.getQueryResult()) {
+    private void configBCtoUnmatchedBCE(ConfigBC configBC) {
+        if (configBC.getSelected() == 1) {
 
-                    try {
-                        UnmatchedBCE unmatchedBCE = new UnmatchedBCE();
+            Pattern p = Pattern.compile(configBC.getRegexEventUrl());
 
-                        // Bookmaker
-                        unmatchedBCE.setBookmaker(configBC.getBookmaker());
-                        // Competition
-                        unmatchedBCE.setCompetition(configBC.getCompetition());
-                        // MarketCssSelector for Event
-                        unmatchedBCE.setMarketCssSelector(configBC.getEventCssSelector());
+            for (String html : configBC.getQueryResult()) {
+
+                try {
+                    UnmatchedBCE unmatchedBCE = new UnmatchedBCE();
+
+                    // Bookmaker
+                    unmatchedBCE.setBookmaker(configBC.getBookmaker());
+                    // Competition
+                    unmatchedBCE.setCompetition(configBC.getCompetition());
+                    // MarketCssSelector for Event
+                    unmatchedBCE.setMarketCssSelector(configBC.getEventCssSelector());
 
 
-                        Matcher m = p.matcher(html);
+                    Matcher m = p.matcher(html);
 
-                        switch (configBC.getType()) {
-                            case 2: // William Hill
-                                // EventJSPre for Event
-                                unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
-                                // MarketURL for Event
-                                m.find();
-                                unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
-                                // Event description
-                                m.find();
-                                String desc = m.group(0);
-                                desc = desc.replaceAll("&nbsp;", "");
-                                unmatchedBCE.setEventDescription(desc);
-                                break;
+                    switch (configBC.getType()) {
+                        case 2: // William Hill
+                            // EventJSPre for Event
+                            unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
+                            // MarketURL for Event
+                            m.find();
+                            unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
+                            // Event description
+                            m.find();
+                            String desc = m.group(0);
+                            desc = desc.replaceAll("&nbsp;", "");
+                            unmatchedBCE.setEventDescription(desc);
+                            break;
 
-                            case 1: // 10Bet
-                                // MarketURL for Event
-                                unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl());
-                                // EventJSPre for Event (1)
-                                unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
-                                // EventJSPre for Event (2)
-                                m.find();
-                                unmatchedBCE.setEventJsPre(unmatchedBCE.getEventJsPre().concat(";").concat(m.group(0)));
-                                // Event description
-                                m.find();
-                                unmatchedBCE.setEventDescription(m.group(0));
-                                break;
+                        case 1: // 10Bet
+                            // MarketURL for Event
+                            unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl());
+                            // EventJSPre for Event (1)
+                            unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
+                            // EventJSPre for Event (2)
+                            m.find();
+                            unmatchedBCE.setEventJsPre(unmatchedBCE.getEventJsPre().concat(";").concat(m.group(0)));
+                            // Event description
+                            m.find();
+                            unmatchedBCE.setEventDescription(m.group(0));
+                            break;
 
-                            default: // Others
-                                // EventJSPre for Event
-                                unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
-                                // MarketURL for Event
-                                m.find();
-                                unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
-                                // Event description
-                                m.find();
-                                unmatchedBCE.setEventDescription(m.group(0));
-                        }
-
-                        unmatchedBCERepository.save(unmatchedBCE);
-
-                    } catch (IllegalStateException e) {
-
+                        default: // Others
+                            // EventJSPre for Event
+                            unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
+                            // MarketURL for Event
+                            m.find();
+                            unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
+                            // Event description
+                            m.find();
+                            unmatchedBCE.setEventDescription(m.group(0));
                     }
 
+                    unmatchedBCERepository.save(unmatchedBCE);
+
+                } catch (IllegalStateException e) {
                 }
+
             }
         }
     }
@@ -265,26 +252,17 @@ public class BookmakerDataCollector {
     private void addBCEPayload() {
         Iterable<BookmakerEvent> bookmakerEvents = bookmakerEventRepository.findAll();
 
-        pq.submitQuery(bookmakerEvents);
+        boolean doQuery = false;
+        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
+            if (bookmakerEvent.getHasPayload() == 0) {
+                doQuery = true;
+                break;
+            }
+        }
 
-//        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
-//            if (bookmakerEvent.getHasPayload() == 0) {
-//
-//                try {
-//
-//                    bf.addQueryResult(bookmakerEvent);
-//
-//                } catch (org.openqa.selenium.StaleElementReferenceException e) {
-//                    logger.info(">> StaleElementReferenceException @ " +
-//                            bookmakerEvent.getEventDescriptionBookmaker());
-//
-//                } catch (TooManyAttemptsException tmae) {
-//                    logger.info(">> TooManyAttemptsException @ " +
-//                            bookmakerEvent.getEventDescriptionBookmaker());
-//                }
-//
-//            }
-//        }
+        if (doQuery) {
+            pq.submitQuery(bookmakerEvents, 6);
+        }
 
         for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
             if (bookmakerEvent.getHasPayload() == 0 && bookmakerEvent.getQueryResult() != null) {

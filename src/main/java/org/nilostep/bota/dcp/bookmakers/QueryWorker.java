@@ -2,6 +2,7 @@ package org.nilostep.bota.dcp.bookmakers;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.nilostep.bota.dcp.data.domain.BookmakerEvent;
 
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
@@ -17,26 +18,39 @@ public class QueryWorker {
     private final int id;
     private final Queue<IQuery> reqQ;
     private final Queue<IQuery> resQ;
+    final CountDownLatch countDownLatch;
+    ParallelQuery pq;
 
     private Engine engine;
     private BrowserFacade browser;
     private boolean active = true;
 
-    final CountDownLatch countDownLatch;
 
-    public QueryWorker(int id, Queue<IQuery> q, Queue<IQuery> r, CountDownLatch finish) {
+    public QueryWorker(
+            int id,
+            Queue<IQuery> q,
+            Queue<IQuery> r,
+            CountDownLatch finish,
+            ParallelQuery pq) {
         this.id = id;
         this.reqQ = q;
         this.resQ = r;
         this.countDownLatch = finish;
+        this.pq = pq;
         browser = new BrowserFacade();
         engine = new Engine();
     }
 
     public void stopEngine() {
         active = false;
-        browser.quitDriver();
-        browser = null;
+        if (browser != null) {
+            browser.quitDriver();
+            browser = null;
+        }
+    }
+
+    public int getId() {
+        return this.id;
     }
 
     public Engine getEngine() {
@@ -54,23 +68,33 @@ public class QueryWorker {
                 if (iQuery != null) {
 
                     try {
-                        browser.addQueryResult(iQuery);
+                        if (iQuery instanceof BookmakerEvent) {
+                            browser.addQueryResult(iQuery);
+                        } else {
+                            browser.addQueryResult(iQuery, true);
+                        }
                         resQ.add(iQuery);
 
-                    } catch (RuntimeException rte) {
-                        active = false;
+                    } catch (Throwable rte) {
+                        //
+                        logger.info(rte.getMessage());
+                        logger.info("CRASHING... QueryWorker: " + id);
+                        //
                         reqQ.add(iQuery);
+                        QueryWorker.this.stopEngine();
+                        //
+                        active = false;
+                        pq.restartWorker(QueryWorker.this);
                     }
 
                 } else {
+                    //
+                    logger.info("Stopping QueryWorker: " + id);
+                    //
                     active = false;
+                    countDownLatch.countDown();
                 }
             }
-            //
-            logger.info("STOPPING... QueryWorker: " + id);
-            //
-            countDownLatch.countDown();
         }
     }
-
 }

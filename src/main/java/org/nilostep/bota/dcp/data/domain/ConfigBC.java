@@ -36,5 +36,7 @@ public class ConfigBC implements IQuery {
     @JoinColumn(name = "competition_id")
     private Competition competition;
 
+    private int hasPayload;
+
     private transient List<String> queryResult;
 }

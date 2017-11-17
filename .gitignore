@@ -155,3 +155,5 @@ target/
 /.idea/libraries/Maven__org_seleniumhq_selenium_selenium_support_3_6_0.xml
 /.idea/libraries/Maven__org_seleniumhq_selenium_selenium_chrome_driver_3_6_0.xml
 /.idea/libraries/Maven__org_seleniumhq_selenium_selenium_ie_driver_3_6_0.xml
+export.json
+local_history.patch

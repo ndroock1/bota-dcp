@@ -3,7 +3,9 @@ package org.nilostep.bota.dcp.export;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -36,32 +38,23 @@ public class OddsBrowserUtil {
                     .getReference("testdata");
 
             final CountDownLatch latch = new CountDownLatch(1);
-            ref.addListenerForSingleValueEvent(
-                    new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-//                            System.out.println("onDataChange: " + dataSnapshot);
-                            latch.countDown();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-//                            System.out.println("onCanceled: " + databaseError);
-                            latch.countDown();
-                        }
-                    });
-            latch.await();
-
             ref.setValue("", new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError != null) {
+
                         System.out.println("Data could not be saved " + databaseError.getMessage());
+                        latch.countDown();
+
                     } else {
+
                         System.out.println("Data saved successfully.");
+                        latch.countDown();
+
                     }
                 }
             });
+            latch.await();
 
             ref.getDatabase().getApp().delete();
         } catch (Exception e) {

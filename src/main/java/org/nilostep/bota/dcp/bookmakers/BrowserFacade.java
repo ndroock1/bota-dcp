@@ -58,7 +58,7 @@ public class BrowserFacade extends Locomotive {
             attempts++;
 
             try {
-                Thread.sleep(250); // sleep for 1 second.
+                Thread.sleep(1000); // sleep for 1 second.
             } catch (Exception x) {
                 fail("Failed due to an exception during Thread.sleep!");
                 x.printStackTrace();
