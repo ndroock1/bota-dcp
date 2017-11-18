@@ -2,10 +2,7 @@ package org.nilostep.bota.dcp.export;
 
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -90,14 +87,9 @@ public class ExportToOddsbrowser {
             fb.update(oddRecordMap, "testdata");
             fb.close();
 
-        } catch (Exception e) {
-            System.out.println("Export FAIL " + e.getMessage());
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return out;
-    }
-
-    public static void main(String[] args) throws Exception {
-        ExportToOddsbrowser exportToOddsbrowser = new ExportToOddsbrowser();
-        exportToOddsbrowser.export();
     }
 }
