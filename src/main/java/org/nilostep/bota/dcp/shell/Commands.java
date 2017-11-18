@@ -10,7 +10,7 @@ import org.nilostep.bota.dcp.data.repository.CompetitionRepository;
 import org.nilostep.bota.dcp.data.repository.EventRepository;
 import org.nilostep.bota.dcp.data.repository.EventtypeRepository;
 import org.nilostep.bota.dcp.export.ExportToOddsbrowser;
-import org.nilostep.bota.dcp.export.OddsBrowserUtil;
+import org.nilostep.bota.dcp.export.Firebase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.shell.standard.ShellComponent;
@@ -45,9 +45,6 @@ public class Commands {
     public ExportToOddsbrowser exportToOddsbrowser;
 
     @Autowired
-    public OddsBrowserUtil oddsBrowserUtil;
-
-    @Autowired
     private Environment env;
 
     @ShellMethod("Version.")
@@ -67,12 +64,17 @@ public class Commands {
 
     @ShellMethod("Export Data to Firebase.")
     public int exportToOddsbrowser() {
-        return exportToOddsbrowser.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+        return exportToOddsbrowser.export();
     }
 
     @ShellMethod("Clean Firebase.")
     public int cleanFirebase() {
-        return oddsBrowserUtil.export(this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+
+        Firebase fb = new Firebase();
+        fb.update("", "testdata");
+        fb.close();
+
+        return 0;
     }
 
     @ShellMethod("This is only a test.")

@@ -1,28 +1,16 @@
 package org.nilostep.bota.dcp.export;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 
 @Component
 public class ExportToOddsbrowser {
-
-    private static Logger logger = LogManager.getLogger();
-
-    private static final String DATABASE_URL = "https://bota-313fb.firebaseio.com/";
 
     private static Map<String, OddRecord> oddRecordMap = new ConcurrentHashMap<String, OddRecord>();
 
@@ -40,7 +28,6 @@ public class ExportToOddsbrowser {
         public String timezone;
 
         public OddRecord() {
-
         }
 
         public OddRecord(
@@ -70,7 +57,7 @@ public class ExportToOddsbrowser {
     public ExportToOddsbrowser() {
     }
 
-    public int export(InputStream serviceAccount) {
+    public int export() {
         int out = 0;
         try {
 
@@ -83,14 +70,6 @@ public class ExportToOddsbrowser {
             ResultSet rs = stmt.executeQuery("SELECT * FROM export");
 
             while (rs.next()) {
-                int x = rs.getInt("bo_id");
-                String s = rs.getString("eventName");
-                double d = rs.getDouble("Odd");
-
-//                //
-//                logger.info("Export : " + x + ":" + s + ":" + d);
-//                //
-
                 oddRecordMap.put(rs.getString("bo_id"),
                         new OddRecord(
                                 rs.getString("Bet"),
@@ -107,57 +86,10 @@ public class ExportToOddsbrowser {
                 );
             }
 
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl(DATABASE_URL)
-                    .build();
-            FirebaseApp.initializeApp(options);
+            Firebase fb = new Firebase();
+            fb.update(oddRecordMap, "testdata");
+            fb.close();
 
-            DatabaseReference ref = FirebaseDatabase
-                    .getInstance(DATABASE_URL)
-                    .getReference("testdata");
-
-//            final CountDownLatch latch = new CountDownLatch(1);
-            ref.addListenerForSingleValueEvent(
-                    new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-//                            System.out.println("onDataChange: " + dataSnapshot);
-//                            latch.countDown();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-//                            System.out.println("onCanceled: " + databaseError);
-//                            latch.countDown();
-                        }
-                    });
-//            latch.await();
-
-            //
-            logger.info("Exporting : " + oddRecordMap.size());
-            //
-
-//            ref.setValueAsync(oddRecordMap);
-
-            final CountDownLatch latch = new CountDownLatch(1);
-            ref.setValue(oddRecordMap, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                    if (databaseError != null) {
-                        System.out.println("Data could not be saved " + databaseError.getMessage());
-                        latch.countDown();
-                    } else {
-                        System.out.println("Data saved successfully.");
-                        latch.countDown();
-                    }
-                }
-            });
-
-            latch.await();
-
-
-            ref.getDatabase().getApp().delete();
         } catch (Exception e) {
             System.out.println("Export FAIL " + e.getMessage());
         }
@@ -166,6 +98,6 @@ public class ExportToOddsbrowser {
 
     public static void main(String[] args) throws Exception {
         ExportToOddsbrowser exportToOddsbrowser = new ExportToOddsbrowser();
-        exportToOddsbrowser.export(exportToOddsbrowser.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json"));
+        exportToOddsbrowser.export();
     }
 }
