@@ -62,10 +62,4 @@ public class Firebase {
     public void close() {
         firebaseDatabase.getApp().delete();
     }
-
-    public static void main(String[] args) {
-        Firebase fb = new Firebase();
-        fb.update("Henkie", "testdata3");
-        fb.close();
-    }
 }
