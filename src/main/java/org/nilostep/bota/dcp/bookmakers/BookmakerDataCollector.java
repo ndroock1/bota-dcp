@@ -275,29 +275,46 @@ public class BookmakerDataCollector {
     }
 
     private void bookmakerEventToBCEMbO(BookmakerEvent bookmakerEvent) {
-
         Iterable<ConfigBM> configBMS = configBMRepository.findByBookmaker(bookmakerEvent.getBookmaker());
-
         String[] oddsRaw = bookmakerEvent.getQueryResult().toArray(new String[0]);
 
-        //
-        logger.info("BCEMbO's : " +
-                bookmakerEvent.getBookmaker().getBookmakerName() +
-                " - " +
-                bookmakerEvent.getEventDescriptionBookmaker());
-        //
-
+        // For Each BookmakerMarket
         for (ConfigBM configBM : configBMS) {
-            Pattern p = Pattern.compile(configBM.getRegexOdds());
-            Matcher m = p.matcher(oddsRaw[configBM.getAddress()]);
-            for (int i = 0; i < configBM.getBetCount(); i++) {
-                m.find();
-                BceMbO bceMbO = new BceMbO();
-                bceMbO.setBet("b" + String.valueOf(i + 1));
-                bceMbO.setOdd(Double.valueOf(m.group()));
-                bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
-                bceMbO.setBookmakerEvent(bookmakerEvent);
-                bceMbORepository.save(bceMbO);
+            if (configBM.getSelected() == 1) {
+                Pattern p = Pattern.compile(configBM.getRegexMarket());
+                int address = 0;
+                // For Each Element of the Array with Market Data ( = QueryResult )
+                for (int i = 0; i < oddsRaw.length; i++) {
+                    Matcher m = p.matcher(oddsRaw[i]);
+                    // IF the Market matches THEN create BCEMbO ...
+                    if (m.find()) {
+                        address = i;
+                        p = Pattern.compile(configBM.getRegexOdds());
+                        m = p.matcher(oddsRaw[address]);
+                        // ... for Each individual Bet
+                        for (int j = 0; j < configBM.getBetCount(); j++) {
+                            m.find();
+                            BceMbO bceMbO = new BceMbO();
+                            bceMbO.setBet("b" + String.valueOf(j + 1));
+                            bceMbO.setOdd(Double.valueOf(m.group()));
+                            bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
+                            bceMbO.setBookmakerEvent(bookmakerEvent);
+                            //
+                            logger.info(
+                                    bookmakerEvent.getBookmaker().getBookmakerName() +
+                                            " - " +
+                                            bookmakerEvent.getEventDescriptionBookmaker() +
+                                            " - " +
+                                            configBM.getMarkettypeId().getMarkettypeId().getMarkettype() +
+                                            " - " +
+                                            bceMbO.getBet()
+                            );
+                            //
+                            bceMbORepository.save(bceMbO);
+                        }
+                        break;
+                    }
+                }
             }
         }
     }

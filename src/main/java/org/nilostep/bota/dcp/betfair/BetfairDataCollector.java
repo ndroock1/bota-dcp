@@ -54,10 +54,6 @@ public class BetfairDataCollector {
     public BetfairDataCollector() {
     }
 
-    public String test() {
-        return env.getProperty("bota.version");
-    }
-
     public int collectBetfairData() {
         int out = 0;
 

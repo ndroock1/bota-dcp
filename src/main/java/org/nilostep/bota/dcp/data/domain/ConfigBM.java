@@ -16,6 +16,8 @@ public class ConfigBM {
 
     private int address;
 
+    private String regexMarket;
+
     private String regexOdds;
 
     private int betCount;

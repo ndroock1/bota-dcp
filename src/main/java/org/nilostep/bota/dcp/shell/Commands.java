@@ -49,7 +49,7 @@ public class Commands {
 
     @ShellMethod("Version.")
     public String version() {
-        return env.getProperty("bota.version") + " : " + betfairDataCollector.test();
+        return env.getProperty("bota.version");
     }
 
     @ShellMethod("Collect Betfair Data.")
