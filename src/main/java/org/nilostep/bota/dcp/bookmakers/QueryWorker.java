@@ -17,7 +17,6 @@ public class QueryWorker {
 
     private final int id;
     private final Queue<IQuery> reqQ;
-    private final Queue<IQuery> resQ;
     final CountDownLatch countDownLatch;
     ParallelQuery pq;
 
@@ -29,12 +28,10 @@ public class QueryWorker {
     public QueryWorker(
             int id,
             Queue<IQuery> q,
-            Queue<IQuery> r,
             CountDownLatch finish,
             ParallelQuery pq) {
         this.id = id;
         this.reqQ = q;
-        this.resQ = r;
         this.countDownLatch = finish;
         this.pq = pq;
         browser = new BrowserFacade();
@@ -73,7 +70,6 @@ public class QueryWorker {
                         } else {
                             browser.addQueryResult(iQuery, true);
                         }
-                        resQ.add(iQuery);
 
                     } catch (Throwable rte) {
                         //

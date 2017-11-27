@@ -25,7 +25,6 @@ public class ParallelQuery {
     private int workerCount;
 
     Queue<IQuery> reqQ = new ConcurrentLinkedQueue<>();
-    Queue<IQuery> resQ = new ConcurrentLinkedQueue<>();
     Map<Integer, QueryWorker> workers = new HashMap<>();
     ExecutorService executor;
     CountDownLatch finish;
@@ -59,7 +58,7 @@ public class ParallelQuery {
         if (reqQ.size() > 0) {
             finish = new CountDownLatch(n);
             for (int i = 0; i < n; i++) {
-                workers.put(i, new QueryWorker(i, reqQ, resQ, finish, this));
+                workers.put(i, new QueryWorker(i, reqQ, finish, this));
             }
 
             executor = Executors.newFixedThreadPool(n);
@@ -87,7 +86,7 @@ public class ParallelQuery {
         //
         workers.remove(qw.getId());
         workerCount = workerCount + 1;
-        QueryWorker worker = new QueryWorker(workerCount, reqQ, resQ, finish, this);
+        QueryWorker worker = new QueryWorker(workerCount, reqQ, finish, this);
         workers.put(workerCount, worker);
         executor.submit(worker.getEngine());
     }

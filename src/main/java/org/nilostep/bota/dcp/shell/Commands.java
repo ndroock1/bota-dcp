@@ -35,6 +35,12 @@ public class Commands {
     @Autowired
     private EventRepository eventRepository;
 
+    //    @Autowired
+//    private BookmakerRepository bookmakerRepository;
+//
+//    @Autowired
+//    private BookmakerEventRepository bookmakerEventRepository;
+//
     @Autowired
     public BetfairDataCollector betfairDataCollector;
 
@@ -228,6 +234,22 @@ public class Commands {
 
         return tableBuilder.addFullBorder(BorderStyle.fancy_light).build();
     }
+
+//    @ShellMethod("List BookmakerEvents.")
+//    public Table listBookmaker() {
+//
+//        Iterable<Bookmaker> bookmakers = bookmakerRepository.findAll();
+//        for(Bookmaker bookmaker : bookmakers) {
+//
+//            TableModel model =
+//                    new BeanListTableModel<BookmakerEvent>(bookmakerEventRepository.findBookmakerEventsByBookmakerIs(bookmaker),
+//                            getFieldNames(BookmakerEvent.class));
+//            TableBuilder tableBuilder = new TableBuilder(model);
+//        }
+//            return tableBuilder.addFullBorder(BorderStyle.fancy_light).build();
+//
+//
+//    }
 
     private String[] getFieldNames(Class clazz) {
         List<String> al = new ArrayList<>();
