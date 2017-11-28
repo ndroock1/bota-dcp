@@ -50,6 +50,10 @@ public class QueryWorker {
         return this.id;
     }
 
+    public Queue<IQuery> getReqQ() {
+        return reqQ;
+    }
+
     public Engine getEngine() {
         return engine;
     }

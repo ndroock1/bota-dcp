@@ -12,6 +12,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,28 +82,19 @@ public class BookmakerDataCollector {
     }
 
     private void addConfigBCPayload() {
-        Iterable<ConfigBC> configBCS = configBCRepository.findAll();
+        Iterable<ConfigBC> configBCS =
+                configBCRepository.findConfigBCSBySelectedEqualsAndHasPayloadEquals(1, 0);
 
-        boolean doQuery = false;
-        for (ConfigBC configBC : configBCS) {
-            if (configBC.getHasPayload() == 0 && configBC.getSelected() == 1) {
-                doQuery = true;
-                break;
-            }
-        }
-
-        if (doQuery) {
-            pq.submitQuery(configBCS);
+        Iterable<IQuery> iQueries = (List) configBCS;
+        if (iQueries.iterator().hasNext()) {
+            pq.submitQuery(iQueries);
         }
 
         for (ConfigBC configBC : configBCS) {
-            if (configBC.getSelected() == 1) {
-                if (configBC.getHasPayload() == 0 && configBC.getQueryResult() != null) {
-
-                    configBCtoUnmatchedBCE(configBC);
-                    configBC.setHasPayload(1);
-                    configBCRepository.save(configBC);
-                }
+            if (configBC.getQueryResult() != null) {
+                configBCtoUnmatchedBCE(configBC);
+                configBC.setHasPayload(1);
+                configBCRepository.save(configBC);
             }
         }
     }
@@ -250,23 +242,16 @@ public class BookmakerDataCollector {
     }
 
     private void addBCEPayload() {
-        Iterable<BookmakerEvent> bookmakerEvents = bookmakerEventRepository.findAll();
+        Iterable<BookmakerEvent> bookmakerEvents =
+                bookmakerEventRepository.findBookmakerEventsByHasPayloadEquals(0);
 
-        boolean doQuery = false;
-        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
-            if (bookmakerEvent.getHasPayload() == 0) {
-                doQuery = true;
-                break;
-            }
-        }
-
-        if (doQuery) {
-            pq.submitQuery(bookmakerEvents, 6);
+        Iterable<IQuery> iQueries = (List) bookmakerEvents;
+        if (iQueries.iterator().hasNext()) {
+            pq.submitQuery(iQueries, 6);
         }
 
         for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
-            if (bookmakerEvent.getHasPayload() == 0 && bookmakerEvent.getQueryResult() != null) {
-
+            if (bookmakerEvent.getQueryResult() != null) {
                 bookmakerEventToBCEMbO(bookmakerEvent);
                 bookmakerEvent.setHasPayload(1);
                 bookmakerEventRepository.save(bookmakerEvent);
@@ -296,7 +281,13 @@ public class BookmakerDataCollector {
                             m.find();
                             BceMbO bceMbO = new BceMbO();
                             bceMbO.setBet("b" + String.valueOf(j + 1));
-                            bceMbO.setOdd(Double.valueOf(m.group()));
+
+                            try {
+                                bceMbO.setOdd(Double.valueOf(m.group()));
+                            } catch (NumberFormatException e) {
+                                bceMbO.setOdd(0d);
+                            }
+
                             bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
                             bceMbO.setBookmakerEvent(bookmakerEvent);
                             //

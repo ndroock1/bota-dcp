@@ -10,5 +10,7 @@ public interface IQuery {
 
     String getEventJsPre();
 
+    int getHasPayload();
+
     void setQueryResult(List<String> result);
 }

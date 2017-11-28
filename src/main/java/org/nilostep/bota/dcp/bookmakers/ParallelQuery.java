@@ -3,8 +3,6 @@ package org.nilostep.bota.dcp.bookmakers;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.nilostep.bota.dcp.data.domain.BookmakerEvent;
-import org.nilostep.bota.dcp.data.domain.ConfigBC;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,30 +30,17 @@ public class ParallelQuery {
     public ParallelQuery() {
     }
 
-    void submitQuery(Iterable<ConfigBC> requests) {
-        for (ConfigBC configBC : requests) {
-            if (configBC.getSelected() == 1) {
-                if (configBC.getHasPayload() == 0) {
-                    reqQ.add(configBC);
-                }
-            }
-        }
-        submitQuery(DEFAULT_NUMBER_OF_QUERYWORKERS);
+    void submitQuery(Iterable<IQuery> requests) {
+        submitQuery(requests, DEFAULT_NUMBER_OF_QUERYWORKERS);
     }
 
-    void submitQuery(Iterable<BookmakerEvent> requests, int n) {
-        for (BookmakerEvent bookmakerEvent : requests) {
-            if (bookmakerEvent.getHasPayload() == 0) {
-                reqQ.add(bookmakerEvent);
-            }
+    void submitQuery(Iterable<IQuery> requests, int n) {
+        for (IQuery iQuery : requests) {
+            reqQ.add(iQuery);
         }
-        submitQuery(n);
-    }
-
-    void submitQuery(int n) {
-        workerCount = n;
 
         if (reqQ.size() > 0) {
+            workerCount = n;
             finish = new CountDownLatch(n);
             for (int i = 0; i < n; i++) {
                 workers.put(i, new QueryWorker(i, reqQ, finish, this));
@@ -76,7 +61,6 @@ public class ParallelQuery {
             } catch (InterruptedException ie) {
                 logger.info(">> InterruptedException @ ");
             }
-
         }
     }
 
@@ -84,9 +68,11 @@ public class ParallelQuery {
         //
         logger.info("Restarting... QueryWorker: " + qw.getId());
         //
+        Queue<IQuery> tmp = qw.getReqQ();
         workers.remove(qw.getId());
+
         workerCount = workerCount + 1;
-        QueryWorker worker = new QueryWorker(workerCount, reqQ, finish, this);
+        QueryWorker worker = new QueryWorker(workerCount, tmp, finish, this);
         workers.put(workerCount, worker);
         executor.submit(worker.getEngine());
     }
