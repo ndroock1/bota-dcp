@@ -6,6 +6,10 @@ public interface IQuery {
 
     String getUrl();
 
+    String getUrlCssSelector();
+
+    String getGroupUrl();
+
     String getCssSelector();
 
     String getEventJsPre();

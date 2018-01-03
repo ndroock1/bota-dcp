@@ -22,6 +22,10 @@ public class BookmakerEvent implements IQuery {
 
     private String Url;
 
+    private String UrlCssSelector;
+
+    private String groupUrl;
+
     private String CssSelector;
 
     private String eventJsPre;
@@ -33,6 +37,10 @@ public class BookmakerEvent implements IQuery {
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
     private Bookmaker bookmaker;
+
+    @ManyToOne
+    @JoinColumn(name = "bc_id")
+    private ConfigBC configBC;
 
     private int hasPayload;
 

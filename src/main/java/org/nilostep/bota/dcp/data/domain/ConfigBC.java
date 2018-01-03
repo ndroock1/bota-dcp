@@ -20,6 +20,10 @@ public class ConfigBC implements IQuery {
 
     private String url;
 
+    private String groupUrl;
+
+    private String UrlCssSelector;
+
     private String cssSelector;
 
     private String regexEventUrl;

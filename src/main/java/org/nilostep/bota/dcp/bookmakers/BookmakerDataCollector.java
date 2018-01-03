@@ -12,6 +12,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,7 +64,8 @@ public class BookmakerDataCollector {
         validateBookmakerEvent();
 
         pq = new ParallelQuery();
-        for (int k = 0; k < 2; k++) {
+        // ToDo:
+        for (int k = 0; k < 1; k++) {
             addBCEPayload();
         }
 
@@ -85,7 +87,7 @@ public class BookmakerDataCollector {
         Iterable<ConfigBC> configBCS =
                 configBCRepository.findConfigBCSBySelectedEqualsAndHasPayloadEquals(1, 0);
 
-        Iterable<IQuery> iQueries = (List) configBCS;
+        Iterable<Object> iQueries = (List) configBCS;
         if (iQueries.iterator().hasNext()) {
             pq.submitQuery(iQueries);
         }
@@ -115,17 +117,36 @@ public class BookmakerDataCollector {
                     unmatchedBCE.setCompetition(configBC.getCompetition());
                     // MarketCssSelector for Event
                     unmatchedBCE.setMarketCssSelector(configBC.getEventCssSelector());
-
+                    // ConfigBC
+                    unmatchedBCE.setConfigBC(configBC);
+                    // GroupUrl
+                    unmatchedBCE.setGroupUrl(configBC.getUrl());
 
                     Matcher m = p.matcher(html);
 
                     switch (configBC.getType()) {
+                        case 3: // Coral
+                            // EventJSPre for Event
+                            unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
+                            // MarketURL for Event
+                            m.find();
+                            unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
+                            // Event description
+                            unmatchedBCE.setUrlCssSelector("a[href='" +
+                                    configBC.getBookmaker().getBookmakerRootUrl() + m.group(0) + "'");
+                            m.find();
+                            unmatchedBCE.setEventDescription(m.group(0));
+                            break;
+
                         case 2: // William Hill
                             // EventJSPre for Event
                             unmatchedBCE.setEventJsPre(configBC.getEventJsPre());
                             // MarketURL for Event
                             m.find();
                             unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
+                            // URL CSS Selector
+                            unmatchedBCE.setUrlCssSelector("a[href='" +
+                                    configBC.getBookmaker().getBookmakerRootUrl() + m.group(0) + "'");
                             // Event description
                             m.find();
                             String desc = m.group(0);
@@ -153,6 +174,7 @@ public class BookmakerDataCollector {
                             m.find();
                             unmatchedBCE.setMarketUrl(configBC.getBookmaker().getBookmakerRootUrl() + m.group(0));
                             // Event description
+                            unmatchedBCE.setUrlCssSelector("a[href='" + m.group(0) + "'");
                             m.find();
                             unmatchedBCE.setEventDescription(m.group(0));
                     }
@@ -189,7 +211,9 @@ public class BookmakerDataCollector {
                             unmatchedBCE.getEventDescription().replace(" - ", " v ")
                     );
                     bookmakerEvent.setUrl(unmatchedBCE.getMarketUrl());
+                    bookmakerEvent.setGroupUrl(unmatchedBCE.getGroupUrl());
                     bookmakerEvent.setCssSelector(unmatchedBCE.getMarketCssSelector());
+                    bookmakerEvent.setUrlCssSelector(unmatchedBCE.getUrlCssSelector());
                     bookmakerEvent.setEventJsPre(unmatchedBCE.getEventJsPre());
                     bookmakerEvent.setSimilarityType("Cosine");
                     // Similarity measure
@@ -200,16 +224,20 @@ public class BookmakerDataCollector {
                     ));
                     bookmakerEvent.setEvent(event);
                     bookmakerEvent.setBookmaker(unmatchedBCE.getBookmaker());
+                    bookmakerEvent.setConfigBC(unmatchedBCE.getConfigBC());
 
                     if (bookmakerEvent.getSimilarity() > bookmakerEventMaxSim.getSimilarity()) {
                         bookmakerEventMaxSim.setEventDescriptionBookmaker(bookmakerEvent.getEventDescriptionBookmaker());
                         bookmakerEventMaxSim.setUrl(bookmakerEvent.getUrl());
+                        bookmakerEventMaxSim.setGroupUrl(bookmakerEvent.getGroupUrl());
                         bookmakerEventMaxSim.setCssSelector(bookmakerEvent.getCssSelector());
+                        bookmakerEventMaxSim.setUrlCssSelector(bookmakerEvent.getUrlCssSelector());
                         bookmakerEventMaxSim.setEventJsPre(bookmakerEvent.getEventJsPre());
                         bookmakerEventMaxSim.setSimilarityType(bookmakerEvent.getSimilarityType());
                         bookmakerEventMaxSim.setSimilarity(bookmakerEvent.getSimilarity());
                         bookmakerEventMaxSim.setEvent(bookmakerEvent.getEvent());
                         bookmakerEventMaxSim.setBookmaker(bookmakerEvent.getBookmaker());
+                        bookmakerEventMaxSim.setConfigBC(bookmakerEvent.getConfigBC());
                     }
 
                     if (bookmakerEventMaxSim.getEventDescriptionBookmaker() != null) {
@@ -241,13 +269,13 @@ public class BookmakerDataCollector {
         }
     }
 
-    private void addBCEPayload() {
+    private void addBCEPayload2() {
         Iterable<BookmakerEvent> bookmakerEvents =
                 bookmakerEventRepository.findBookmakerEventsByHasPayloadEquals(0);
 
         Iterable<IQuery> iQueries = (List) bookmakerEvents;
         if (iQueries.iterator().hasNext()) {
-            pq.submitQuery(iQueries, 6);
+//            pq.submitQuery(iQueries, 8);
         }
 
         for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
@@ -257,6 +285,55 @@ public class BookmakerDataCollector {
                 bookmakerEventRepository.save(bookmakerEvent);
             }
         }
+    }
+
+    private void addBCEPayload() {
+        Bookmaker bet10 = bookmakerRepository.findOne("bkm003"); // Bet10
+
+        List<Object> out = new ArrayList<>();
+
+        Iterable<ConfigBC> configBCS =
+                configBCRepository.findConfigBCSBySelectedEqualsAndHasPayloadEquals(1, 1);
+
+        for (ConfigBC configBC : configBCS) {
+            Iterable<BookmakerEvent> bookmakerEvents = bookmakerEventRepository.findBookmakerEventsByConfigBC(configBC);
+
+            if (configBC.getBookmaker().equals(bet10)) {
+                for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
+                    out.add(bookmakerEvent);
+                }
+            } else {
+                out.add(bookmakerEvents); // Added as List
+            }
+        }
+
+        pq.submitQuery(out, 4);
+
+        for (Object o : out) {
+            String oName = o.getClass().getSimpleName();
+            switch (oName) {
+                case "BookmakerEvent":
+                    BookmakerEvent be = (BookmakerEvent) o;
+                    if (be.getQueryResult() != null) {
+                        bookmakerEventToBCEMbO(be);
+                        be.setHasPayload(1);
+                        bookmakerEventRepository.save(be);
+                    }
+                    break;
+
+                case "ArrayList":
+                    for (Object obj : (ArrayList) o) {
+                        be = (BookmakerEvent) obj;
+                        if (be.getQueryResult() != null) {
+                            bookmakerEventToBCEMbO(be);
+                            be.setHasPayload(1);
+                            bookmakerEventRepository.save(be);
+                        }
+                    }
+            }
+        }
+
+
     }
 
     private void bookmakerEventToBCEMbO(BookmakerEvent bookmakerEvent) {

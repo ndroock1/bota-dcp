@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,7 +23,7 @@ public class ParallelQuery {
     private final int DEFAULT_NUMBER_OF_QUERYWORKERS = 2;
     private int workerCount;
 
-    Queue<IQuery> reqQ = new ConcurrentLinkedQueue<>();
+    Queue<Object> reqQ = new ConcurrentLinkedQueue<>();
     Map<Integer, QueryWorker> workers = new HashMap<>();
     ExecutorService executor;
     CountDownLatch finish;
@@ -30,13 +31,13 @@ public class ParallelQuery {
     public ParallelQuery() {
     }
 
-    void submitQuery(Iterable<IQuery> requests) {
+    void submitQuery(Iterable<Object> requests) {
         submitQuery(requests, DEFAULT_NUMBER_OF_QUERYWORKERS);
     }
 
-    void submitQuery(Iterable<IQuery> requests, int n) {
-        for (IQuery iQuery : requests) {
-            reqQ.add(iQuery);
+    void submitQuery(Iterable<Object> requests, int n) {
+        for (Object o : requests) {
+            reqQ.add(o);
         }
 
         if (reqQ.size() > 0) {
@@ -64,11 +65,18 @@ public class ParallelQuery {
         }
     }
 
+    //ToDo: submitQuery
+    void submitQuery(List<Iterable<IQuery>> requests, int n) {
+        // process the list of lists...
+        // ToDo: Voeg een Iterable<IQuery> toe aan de reqQ
+
+    }
+
     void restartWorker(QueryWorker qw) {
         //
         logger.info("Restarting... QueryWorker: " + qw.getId());
         //
-        Queue<IQuery> tmp = qw.getReqQ();
+        Queue<Object> tmp = qw.getReqQ();
         workers.remove(qw.getId());
 
         workerCount = workerCount + 1;
