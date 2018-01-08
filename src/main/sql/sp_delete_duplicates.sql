@@ -25,7 +25,7 @@ CREATE PROCEDURE `oddsbrowser`.`sp_delete_duplicates`()
            bookmaker_id, id) X
           ON duplicates.be_id = X.be_id
       WHERE
-        X.be_id IS NULL;
+        X.be_id IS NOT NULL;
 
     DELETE FROM bookmaker_event
     WHERE

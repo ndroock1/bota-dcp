@@ -1,6 +1,6 @@
 package org.nilostep.bota.dcp.bookmakers;
 
-import info.debatty.java.stringsimilarity.Cosine;
+import info.debatty.java.stringsimilarity.Jaccard;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nilostep.bota.dcp.data.domain.*;
@@ -217,11 +217,24 @@ public class BookmakerDataCollector {
                     bookmakerEvent.setEventJsPre(unmatchedBCE.getEventJsPre());
                     bookmakerEvent.setSimilarityType("Cosine");
                     // Similarity measure
-                    Cosine cosine = new Cosine();
-                    bookmakerEvent.setSimilarity(cosine.similarity(
-                            bookmakerEvent.getEventDescriptionBookmaker(),
-                            event.getName()
-                    ));
+//                    Cosine cosine = new Cosine();
+//                    bookmakerEvent.setSimilarity(cosine.similarity(
+//                            bookmakerEvent.getEventDescriptionBookmaker(),
+//                            event.getName()
+//                    ));
+
+                    bookmakerEvent.setSimilarityType("Jaccard");
+                    bookmakerEvent.setSimilarity(
+                            calcSimilarity(bookmakerEvent.getEventDescriptionBookmaker(), event.getName())
+                    );
+
+//logger.info("+++");
+//logger.info(bookmakerEvent.getEventDescriptionBookmaker());
+//logger.info(event.getName());
+//logger.info(bookmakerEvent.getSimilarity());
+//logger.info("+++");
+
+
                     bookmakerEvent.setEvent(event);
                     bookmakerEvent.setBookmaker(unmatchedBCE.getBookmaker());
                     bookmakerEvent.setConfigBC(unmatchedBCE.getConfigBC());
@@ -249,7 +262,20 @@ public class BookmakerDataCollector {
 
             }
 
+        }
+    }
 
+    private double calcSimilarity(String be, String ev) {
+//        Cosine sim = new Cosine();
+        Jaccard sim = new Jaccard();
+
+        String[] beParts = be.split(" v ");
+        String[] evParts = ev.split(" v ");
+
+        if (evParts.length > 1) {
+            return (sim.similarity(beParts[0], evParts[0]) + sim.similarity(beParts[1], evParts[1])) / 2;
+        } else {
+            return 0;
         }
     }
 
@@ -307,7 +333,7 @@ public class BookmakerDataCollector {
             }
         }
 
-        pq.submitQuery(out, 4);
+        pq.submitQuery(out, 6);
 
         for (Object o : out) {
             String oName = o.getClass().getSimpleName();
