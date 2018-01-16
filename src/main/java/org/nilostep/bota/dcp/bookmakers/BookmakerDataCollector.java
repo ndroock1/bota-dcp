@@ -380,32 +380,74 @@ public class BookmakerDataCollector {
                         p = Pattern.compile(configBM.getRegexOdds());
                         m = p.matcher(oddsRaw[address]);
                         // ... for Each individual Bet
+
+
+                        List<String> ar = new ArrayList<>();
                         for (int j = 0; j < configBM.getBetCount(); j++) {
-                            m.find();
-                            BceMbO bceMbO = new BceMbO();
-                            bceMbO.setBet("b" + String.valueOf(j + 1));
-
-                            try {
-                                bceMbO.setOdd(Double.valueOf(m.group()));
-                            } catch (NumberFormatException e) {
-                                bceMbO.setOdd(0d);
+                            if (m.find()) {
+                                ar.add(m.group());
+                            } else {
+                                break;
                             }
-
-                            bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
-                            bceMbO.setBookmakerEvent(bookmakerEvent);
-                            //
-                            logger.info(
-                                    bookmakerEvent.getBookmaker().getBookmakerName() +
-                                            " - " +
-                                            bookmakerEvent.getEventDescriptionBookmaker() +
-                                            " - " +
-                                            configBM.getMarkettypeId().getMarkettypeId().getMarkettype() +
-                                            " - " +
-                                            bceMbO.getBet()
-                            );
-                            //
-                            bceMbORepository.save(bceMbO);
                         }
+                        if (ar.size() == configBM.getBetCount()) {
+                            int j = 0;
+                            for (String sodd : ar) {
+//for (int j = 0; j < configBM.getBetCount(); j++) {
+//    m.find();
+                                BceMbO bceMbO = new BceMbO();
+                                bceMbO.setBet("b" + String.valueOf(j + 1));
+                                j = j + 1;
+                                try {
+                                    bceMbO.setOdd(Double.valueOf(sodd));
+                                } catch (NumberFormatException e) {
+                                    bceMbO.setOdd(0d);
+                                }
+
+                                bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
+                                bceMbO.setBookmakerEvent(bookmakerEvent);
+                                //
+                                logger.info(
+                                        bookmakerEvent.getBookmaker().getBookmakerName() +
+                                                " - " +
+                                                bookmakerEvent.getEventDescriptionBookmaker() +
+                                                " - " +
+                                                configBM.getMarkettypeId().getMarkettypeId().getMarkettype() +
+                                                " - " +
+                                                bceMbO.getBet()
+                                );
+                                //
+                                bceMbORepository.save(bceMbO);
+                            }
+                        }
+
+
+//                        for (int j = 0; j < configBM.getBetCount(); j++) {
+//                            m.find();
+//                            BceMbO bceMbO = new BceMbO();
+//                            bceMbO.setBet("b" + String.valueOf(j + 1));
+//
+//                            try {
+//                                bceMbO.setOdd(Double.valueOf(m.group()));
+//                            } catch (NumberFormatException e) {
+//                                bceMbO.setOdd(0d);
+//                            }
+//
+//                            bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
+//                            bceMbO.setBookmakerEvent(bookmakerEvent);
+//                            //
+//                            logger.info(
+//                                    bookmakerEvent.getBookmaker().getBookmakerName() +
+//                                            " - " +
+//                                            bookmakerEvent.getEventDescriptionBookmaker() +
+//                                            " - " +
+//                                            configBM.getMarkettypeId().getMarkettypeId().getMarkettype() +
+//                                            " - " +
+//                                            bceMbO.getBet()
+//                            );
+//                            //
+//                            bceMbORepository.save(bceMbO);
+//                        }
                         break;
                     }
                 }
