@@ -234,7 +234,6 @@ public class BookmakerDataCollector {
 //logger.info(bookmakerEvent.getSimilarity());
 //logger.info("+++");
 
-
                     bookmakerEvent.setEvent(event);
                     bookmakerEvent.setBookmaker(unmatchedBCE.getBookmaker());
                     bookmakerEvent.setConfigBC(unmatchedBCE.getConfigBC());
@@ -273,7 +272,18 @@ public class BookmakerDataCollector {
         String[] evParts = ev.split(" v ");
 
         if (evParts.length > 1) {
-            return (sim.similarity(beParts[0], evParts[0]) + sim.similarity(beParts[1], evParts[1])) / 2;
+            double sim1 = sim.similarity(beParts[0].toLowerCase(), evParts[0].toLowerCase());
+            double sim2 = sim.similarity(beParts[1].toLowerCase(), evParts[1].toLowerCase());
+            double similarity = (sim1 + sim2) / 2;
+
+//logger.info(be);
+//logger.info(ev);
+//logger.info(sim1);
+//logger.info(sim2);
+//logger.info(sim);
+//logger.info("===");
+
+            return similarity;
         } else {
             return 0;
         }
