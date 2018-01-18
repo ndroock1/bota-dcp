@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,7 +46,7 @@ public class BrowserFacade extends Locomotive {
         executeJS(js, 0);
     }
 
-    private List<WebElement> waitForElements(By by) {
+    private List<WebElement> waitForElements1(By by) {
         int attempts = 0;
         int size = driver.findElements(by).size();
 
@@ -71,6 +73,17 @@ public class BrowserFacade extends Locomotive {
         if (size == 1) System.err.println("WARN: There is only 1 " + by.toString() + " 's!");
         return driver.findElements(by);
     }
+
+
+    private List<WebElement> waitForElements(By by) {
+
+        WebDriverWait wait = new WebDriverWait(driver, 30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+        return driver.findElements(by);
+    }
+
+
+
 
     private void getQueryResult(IQuery query, String attribute) {
         List<String> out = new ArrayList<String>();
