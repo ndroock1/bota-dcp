@@ -22,6 +22,8 @@ public class ConfigBM {
 
     private int betCount;
 
+    private String betCountS;
+
     @ManyToOne
     @JoinColumn(name = "bookmaker_id")
     private Bookmaker bookmaker;

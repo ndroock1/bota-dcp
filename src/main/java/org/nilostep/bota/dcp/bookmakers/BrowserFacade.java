@@ -46,7 +46,7 @@ public class BrowserFacade extends Locomotive {
         executeJS(js, 0);
     }
 
-    private List<WebElement> waitForElements1(By by) {
+    private List<WebElement> waitForElements(By by) {
         int attempts = 0;
         int size = driver.findElements(by).size();
 
@@ -63,7 +63,7 @@ public class BrowserFacade extends Locomotive {
                 //
                 logger.info("Sleeping@ :" + by.toString());
                 //
-                Thread.sleep(1000); // sleep for 1 second.
+                Thread.sleep(250); // sleep for 1 second.
             } catch (Exception x) {
                 fail("Failed due to an exception during Thread.sleep!");
                 x.printStackTrace();
@@ -75,10 +75,13 @@ public class BrowserFacade extends Locomotive {
     }
 
 
-    private List<WebElement> waitForElements(By by) {
+    private List<WebElement> waitForElements1(By by) {
 
         WebDriverWait wait = new WebDriverWait(driver, 30);
+//        wait.until(ExpectedConditions.elementToBeClickable(by));
         wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+//        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(by));
+
         return driver.findElements(by);
     }
 

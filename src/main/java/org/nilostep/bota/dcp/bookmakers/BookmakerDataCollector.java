@@ -305,24 +305,6 @@ public class BookmakerDataCollector {
         }
     }
 
-    private void addBCEPayload2() {
-        Iterable<BookmakerEvent> bookmakerEvents =
-                bookmakerEventRepository.findBookmakerEventsByHasPayloadEquals(0);
-
-        Iterable<IQuery> iQueries = (List) bookmakerEvents;
-        if (iQueries.iterator().hasNext()) {
-//            pq.submitQuery(iQueries, 8);
-        }
-
-        for (BookmakerEvent bookmakerEvent : bookmakerEvents) {
-            if (bookmakerEvent.getQueryResult() != null) {
-                bookmakerEventToBCEMbO(bookmakerEvent);
-                bookmakerEvent.setHasPayload(1);
-                bookmakerEventRepository.save(bookmakerEvent);
-            }
-        }
-    }
-
     private void addBCEPayload() {
         Bookmaker bet10 = bookmakerRepository.findOne("bkm003"); // Bet10
 
@@ -391,22 +373,19 @@ public class BookmakerDataCollector {
                         m = p.matcher(oddsRaw[address]);
                         // ... for Each individual Bet
 
-
                         List<String> ar = new ArrayList<>();
-                        for (int j = 0; j < configBM.getBetCount(); j++) {
+                        for (int j = 0; j < configBM.getBetCountS().length(); j++) {
                             if (m.find()) {
                                 ar.add(m.group());
                             } else {
                                 break;
                             }
                         }
-                        if (ar.size() == configBM.getBetCount()) {
+                        if (ar.size() == configBM.getBetCountS().length()) {
                             int j = 0;
                             for (String sodd : ar) {
-//for (int j = 0; j < configBM.getBetCount(); j++) {
-//    m.find();
                                 BceMbO bceMbO = new BceMbO();
-                                bceMbO.setBet("b" + String.valueOf(j + 1));
+                                bceMbO.setBet("b" + configBM.getBetCountS().charAt(j));
                                 j = j + 1;
                                 try {
                                     bceMbO.setOdd(Double.valueOf(sodd));
@@ -430,34 +409,6 @@ public class BookmakerDataCollector {
                                 bceMbORepository.save(bceMbO);
                             }
                         }
-
-
-//                        for (int j = 0; j < configBM.getBetCount(); j++) {
-//                            m.find();
-//                            BceMbO bceMbO = new BceMbO();
-//                            bceMbO.setBet("b" + String.valueOf(j + 1));
-//
-//                            try {
-//                                bceMbO.setOdd(Double.valueOf(m.group()));
-//                            } catch (NumberFormatException e) {
-//                                bceMbO.setOdd(0d);
-//                            }
-//
-//                            bceMbO.setMarkettype(configBM.getMarkettypeId().getMarkettypeId().getMarkettype());
-//                            bceMbO.setBookmakerEvent(bookmakerEvent);
-//                            //
-//                            logger.info(
-//                                    bookmakerEvent.getBookmaker().getBookmakerName() +
-//                                            " - " +
-//                                            bookmakerEvent.getEventDescriptionBookmaker() +
-//                                            " - " +
-//                                            configBM.getMarkettypeId().getMarkettypeId().getMarkettype() +
-//                                            " - " +
-//                                            bceMbO.getBet()
-//                            );
-//                            //
-//                            bceMbORepository.save(bceMbO);
-//                        }
                         break;
                     }
                 }

@@ -18,7 +18,7 @@ public class Firebase {
 
     public Firebase() {
         InputStream serviceAccount = this.getClass().getResourceAsStream("/bota-6e0b33e3f1fe.json");
-
+//        InputStream serviceAccount = this.getClass().getResourceAsStream("/bota-313fb-firebase-adminsdk-693yk-eea6b1fded.json");
         try {
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -61,5 +61,9 @@ public class Firebase {
 
     public void close() {
         firebaseDatabase.getApp().delete();
+    }
+
+    public static void main(String[] args) {
+        Firebase fb = new Firebase();
     }
 }
